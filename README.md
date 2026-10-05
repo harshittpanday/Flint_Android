@@ -22,7 +22,7 @@ Phase 1 changes only safe, user-facing product text. The existing PojavLauncher 
 - [x] Phase 1 Flint product identity
 - [ ] Flint UI/UX
 - [ ] Flint profiles
-- [ ] Dedicated Flint Android icon
+- [x] Canonical Flint Android visual assets
 - [ ] Minecraft launch testing on real Android hardware
 - [ ] Touch controls
 - [ ] Keyboard and mouse support
@@ -70,6 +70,6 @@ cd Flint_Android
 
 On Windows, use `gradlew.bat` instead of `./gradlew`.
 
-## Deferred branding assets
+## Visual assets
 
-The inherited launcher icon and other legacy visual assets are intentionally unchanged because final Flint Android artwork is not yet available. See [BRANDING.md](BRANDING.md) for the replacement inventory and current usage locations.
+Flint Android uses the canonical Flint logo and Android icon variants maintained by the desktop Flint project. See [BRANDING.md](BRANDING.md) for source provenance, Android usage, and intentionally unchanged non-brand artwork.

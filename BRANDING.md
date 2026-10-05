@@ -1,17 +1,20 @@
 # Flint Android branding inventory
 
-This inventory records the inherited visual assets that remain after the Phase 1 textual-branding milestone. It is documentation for a dedicated icon and visual-branding milestone; none of these assets should be replaced without approved Flint artwork.
+This document records the visual assets adopted during the Phase 2 branding milestone and their provenance.
 
-## Product identity
+## Canonical source
 
-- Product name: **Flint**
-- Full contextual name: **Flint Android**
-- Visual direction: near-black or dark charcoal, warm orange or amber, clean and minimal
-- Platform direction: the desktop Flint experience adapted for mobile
+The artwork is reused from the Windows Flint repository without modifying that repository:
 
-## Deferred launcher icon
+- `branding/flint-logo-source.png` is the documented canonical pixel-art logo source.
+- `src-tauri/icons/android/` provides the checked-in Android launcher, round, foreground, adaptive-icon, and background resources.
+- `src-tauri/icons/icon.svg` provides the existing Flint `F` vector used to derive the monochrome Android notification icon.
 
-The current launcher icon visibly uses inherited Minecraft/Pojav crafting-table artwork. It remains temporary in all density variants:
+No new logo or visual identity was invented for Flint Android.
+
+## Android launcher icon
+
+The canonical density-specific Android resources are installed under:
 
 - `app_pojavlauncher/src/main/res/mipmap-mdpi/`
 - `app_pojavlauncher/src/main/res/mipmap-hdpi/`
@@ -19,31 +22,24 @@ The current launcher icon visibly uses inherited Minecraft/Pojav crafting-table 
 - `app_pojavlauncher/src/main/res/mipmap-xxhdpi/`
 - `app_pojavlauncher/src/main/res/mipmap-xxxhdpi/`
 
-Each directory contains some or all of `ic_launcher.png`, `ic_launcher_round.png`, and `ic_launcher_foreground.png`. The adaptive-icon wrappers are:
+Each density contains `ic_launcher.png`, `ic_launcher_round.png`, and `ic_launcher_foreground.png`. Adaptive-icon resources are:
 
 - `app_pojavlauncher/src/main/res/mipmap-anydpi-v26/ic_launcher.xml`
 - `app_pojavlauncher/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml`
 - `app_pojavlauncher/src/main/res/values/ic_launcher_background.xml`
 
-### Runtime usage
+The existing manifest and scoped-storage provider continue to reference `ic_launcher` and `ic_launcher_round`, so no runtime code or application identity changes were required.
 
-- `app_pojavlauncher/src/main/AndroidManifest.xml` uses `@mipmap/ic_launcher` and `@mipmap/ic_launcher_round` for the application icon.
-- `app_pojavlauncher/src/main/java/net/kdt/pojavlaunch/scoped/FolderProvider.java` uses `R.mipmap.ic_launcher` for storage roots and documents.
+## Notification icon
 
-### Preview-only usage
+`app_pojavlauncher/src/main/res/drawable/notif_icon.xml` uses the exact `F` path from Flint's existing `src-tauri/icons/icon.svg`, rendered as the monochrome white silhouette required for an Android small notification icon. It is used by the notification, progress, and game services through their existing resource reference.
 
-- `app_pojavlauncher/src/main/res/layout/item_minecraft_account.xml` references the launcher icon through a `tools:` preview attribute.
-- `app_pojavlauncher/src/main/res/layout/view_mod.xml` references the launcher foreground through `tools:` preview attributes.
+## Removed legacy visuals
 
-## Other inherited visual assets to review
+The unreferenced inherited assets `app_pojavlauncher/src/main/assets/pojavlauncher.png` and `app_pojavlauncher/src/main/assets/pojavtext.png` were removed. The prior launcher and notification artwork was replaced by the canonical Flint resources above.
 
-- `app_pojavlauncher/src/main/res/drawable/notif_icon.xml` is the notification small icon used by notification, progress, and game services.
-- `app_pojavlauncher/src/main/res/drawable/ic_setting_sign_in_background.webp` is displayed by the control-import screen.
-- `app_pojavlauncher/src/main/assets/pojavlauncher.png` contains inherited crafting-table artwork.
-- `app_pojavlauncher/src/main/assets/pojavtext.png` is a legacy Pojav-named image asset.
+## Intentionally unchanged
 
-The two assets under `src/main/assets` have no direct source-code or resource reference in the current tree, but they remain preserved for attribution and migration review.
-
-## Intentionally retained technical identity
-
-Phase 1 does not change `net.kdt.pojavlaunch`, the `app_pojavlauncher` module and source paths, native library names, Gradle coordinates, historical references, licenses, copyright notices, or upstream dependency credits. These are technical identity or attribution rather than user-facing Flint product copy.
+- `app_pojavlauncher/src/main/res/drawable/ic_setting_sign_in_background.webp` remains unchanged. It is Minecraft landscape artwork used by the control-import screen, not Pojav product branding; replacing it belongs to a later UI redesign.
+- Application ID, namespace, Java packages, module and source paths, native names, storage paths, URLs, protocols, authentication, renderer, controls, runtime management, and launcher behavior remain unchanged.
+- PojavLauncher lineage, licenses, copyright notices, upstream links, translator credits, dependency credits, and historical attribution remain preserved.
