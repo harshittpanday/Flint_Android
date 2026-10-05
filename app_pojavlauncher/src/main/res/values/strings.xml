@@ -156,6 +156,17 @@
     <string name="main_share_logs">Share log file</string>
     <string name="main_install_jar_file">Execute a .jar</string>
     <string name="main_play">Play</string>
+    <string name="home_brand_subtitle">Android launcher</string>
+    <string name="home_ready_to_play">Ready to play</string>
+    <string name="home_game_title">Minecraft: Java Edition</string>
+    <string name="home_game_subtitle">Choose your profile, then launch your game.</string>
+    <string name="home_selected_profile">Selected profile and version</string>
+    <string name="home_change_profile_hint">Tap the profile to switch. Use edit to manage its settings.</string>
+    <string name="home_edit_profile">Edit selected profile</string>
+    <string name="home_quick_access">Quick access</string>
+    <string name="home_tools_subtitle">Launcher tools and community</string>
+    <string name="home_ready_to_launch">Your game is ready</string>
+    <string name="home_attribution">Flint Android · Built on PojavLauncher</string>
     <string name="autoram_info_msg">Memory set to %d MB</string>
     <string name="mcl_setting_check_libraries">Check libraries after downloading</string>
     <string name="mcl_setting_check_libraries_subtitle">This option forces the launcher to check the library hash if it\'s available. Prevents broken downloads.</string>

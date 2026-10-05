@@ -12,4 +12,20 @@
 
     <color name="primary_text">#FFFFFF</color>
     <color name="secondary_text">#B2B2B2</color>
+
+    <!-- Flint home screen palette, aligned with the desktop launcher. -->
+    <color name="flint_home_background">#090B09</color>
+    <color name="flint_home_nav">#0B0E0B</color>
+    <color name="flint_home_surface">#151815</color>
+    <color name="flint_home_surface_raised">#1B1F1A</color>
+    <color name="flint_home_surface_soft">#111411</color>
+    <color name="flint_home_line">#2B302A</color>
+    <color name="flint_home_line_warm">#3B3129</color>
+    <color name="flint_home_text">#F1F3EE</color>
+    <color name="flint_home_muted">#929B8E</color>
+    <color name="flint_home_quiet">#6F786B</color>
+    <color name="flint_home_accent">#FF7817</color>
+    <color name="flint_home_accent_strong">#FF982F</color>
+    <color name="flint_home_accent_pressed">#DB5C0A</color>
+    <color name="flint_home_play_text">#17110C</color>
 </resources>
