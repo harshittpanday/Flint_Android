@@ -1,4 +1,6 @@
 %s (Minecraft Java Launcher for Android), version %s by Tran Khanh Duy (based on "Boardwalk" app)<br>
+Flint Android is derived from PojavLauncher and builds on its Android Minecraft: Java Edition platform work.<br>
+Inherited PojavLauncher code and platform work remain attributed to their original authors and contributors.<br>
 
 * License:<br>
  • This application is licensed under <a href="https://github.com/PojavLauncherTeam/PojavLauncher/blob/master/LICENSE">GNU GPLv3</a>.<br>
