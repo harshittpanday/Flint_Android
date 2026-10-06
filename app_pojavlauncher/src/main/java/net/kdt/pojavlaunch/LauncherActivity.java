@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
@@ -30,6 +31,9 @@ import net.kdt.pojavlaunch.extra.ExtraCore;
 import net.kdt.pojavlaunch.extra.ExtraListener;
 import net.kdt.pojavlaunch.fragments.MainMenuFragment;
 import net.kdt.pojavlaunch.fragments.MicrosoftLoginFragment;
+import net.kdt.pojavlaunch.fragments.ProfileEditorFragment;
+import net.kdt.pojavlaunch.fragments.ProfileTypeSelectFragment;
+import net.kdt.pojavlaunch.fragments.SearchModFragment;
 import net.kdt.pojavlaunch.fragments.SelectAuthFragment;
 import net.kdt.pojavlaunch.lifecycle.ContextAwareDoneListener;
 import net.kdt.pojavlaunch.lifecycle.ContextExecutor;
@@ -62,6 +66,11 @@ public class LauncherActivity extends BaseActivity {
     private mcAccountSpinner mAccountSpinner;
     private FragmentContainerView mFragmentView;
     private ImageButton mSettingsButton;
+    private Button mHomeNavigationButton;
+    private Button mProfilesNavigationButton;
+    private Button mModsNavigationButton;
+    private Button mCosmeticsNavigationButton;
+    private Button mSettingsNavigationButton;
     private ProgressLayout mProgressLayout;
     private ProgressServiceKeeper mProgressServiceKeeper;
     private ModloaderInstallTracker mInstallTracker;
@@ -73,6 +82,7 @@ public class LauncherActivity extends BaseActivity {
         public void onFragmentResumed(@NonNull FragmentManager fm, @NonNull Fragment f) {
             mSettingsButton.setImageDrawable(ContextCompat.getDrawable(getBaseContext(), f instanceof MainMenuFragment
                     ? R.drawable.ic_menu_settings : R.drawable.ic_menu_home));
+            updateActiveNavigation(f);
         }
     };
 
@@ -212,6 +222,19 @@ public class LauncherActivity extends BaseActivity {
         ProgressKeeper.addTaskCountListener((mProgressServiceKeeper = new ProgressServiceKeeper(this)));
 
         mSettingsButton.setOnClickListener(mSettingButtonListener);
+        mHomeNavigationButton.setOnClickListener(v -> Tools.backToMainMenu(this));
+        mProfilesNavigationButton.setOnClickListener(v -> Tools.swapFragment(
+                this, ProfileEditorFragment.class, ProfileEditorFragment.TAG, null));
+        mModsNavigationButton.setOnClickListener(v -> Tools.swapFragment(
+                this, SearchModFragment.class, SearchModFragment.TAG, null));
+        mCosmeticsNavigationButton.setOnClickListener(v -> Toast.makeText(
+                this, R.string.flint_cosmetics_deferred, Toast.LENGTH_SHORT).show());
+        mSettingsNavigationButton.setOnClickListener(v -> {
+            Fragment fragment = getSupportFragmentManager().findFragmentById(mFragmentView.getId());
+            if (!(fragment instanceof LauncherPreferenceFragment)) {
+                Tools.swapFragment(this, LauncherPreferenceFragment.class, SETTING_FRAGMENT_TAG, null);
+            }
+        });
         ProgressKeeper.addTaskCountListener(mProgressLayout);
         ExtraCore.addExtraListener(ExtraConstants.BACK_PREFERENCE, mBackPreferenceListener);
         ExtraCore.addExtraListener(ExtraConstants.SELECT_AUTH_METHOD, mSelectAuthMethod);
@@ -356,5 +379,20 @@ public class LauncherActivity extends BaseActivity {
         mSettingsButton = findViewById(R.id.setting_button);
         mAccountSpinner = findViewById(R.id.account_spinner);
         mProgressLayout = findViewById(R.id.progress_layout);
+        mHomeNavigationButton = findViewById(R.id.nav_home_button);
+        mProfilesNavigationButton = findViewById(R.id.nav_profiles_button);
+        mModsNavigationButton = findViewById(R.id.nav_mods_button);
+        mCosmeticsNavigationButton = findViewById(R.id.nav_cosmetics_button);
+        mSettingsNavigationButton = findViewById(R.id.nav_settings_button);
+        updateActiveNavigation(getSupportFragmentManager().findFragmentById(mFragmentView.getId()));
+    }
+
+    private void updateActiveNavigation(Fragment fragment) {
+        mHomeNavigationButton.setSelected(fragment instanceof MainMenuFragment);
+        mProfilesNavigationButton.setSelected(fragment instanceof ProfileEditorFragment
+                || fragment instanceof ProfileTypeSelectFragment);
+        mModsNavigationButton.setSelected(fragment instanceof SearchModFragment);
+        mCosmeticsNavigationButton.setSelected(false);
+        mSettingsNavigationButton.setSelected(fragment instanceof LauncherPreferenceFragment);
     }
 }

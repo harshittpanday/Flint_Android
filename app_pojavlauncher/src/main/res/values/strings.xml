@@ -167,6 +167,33 @@
     <string name="home_tools_subtitle">Launcher tools and community</string>
     <string name="home_ready_to_launch">Your game is ready</string>
     <string name="home_attribution">Flint Android · Built on PojavLauncher</string>
+    <string name="flint_nav_home">Home</string>
+    <string name="flint_nav_profiles">Profiles</string>
+    <string name="flint_nav_mods">Mods</string>
+    <string name="flint_nav_cosmetics">Cosmetics</string>
+    <string name="flint_nav_settings">Settings</string>
+    <string name="flint_account_label">Account</string>
+    <string name="flint_local_mode">Local launcher</string>
+    <string name="flint_cosmetics_deferred">Cosmetics are planned for a later Flint Android phase.</string>
+    <string name="flint_desktop_link">Flint Desktop</string>
+    <string name="flint_android_link">Flint Android</string>
+    <string name="flint_desktop_url" translatable="false">https://github.com/harshittpanday/Flint</string>
+    <string name="flint_android_url" translatable="false">https://github.com/harshittpanday/Flint_Android</string>
+    <string name="home_playing_on_android">Playing on Flint Android</string>
+    <string name="home_profile_details">Minecraft %1$s · %2$s</string>
+    <string name="home_profile_unavailable">Choose or create a profile to continue</string>
+    <string name="home_loader_vanilla">Vanilla</string>
+    <string name="home_loader_fabric">Fabric</string>
+    <string name="home_loader_forge">Forge</string>
+    <string name="home_loader_quilt">Quilt</string>
+    <string name="home_loader_optifine">OptiFine</string>
+    <string name="home_performance_preset">Performance preset</string>
+    <string name="home_performance_description">Profile-specific renderer, memory and controls</string>
+    <string name="home_manage_setup">Manage setup</string>
+    <string name="home_launcher_tools">Launcher tools</string>
+    <string name="flint_about_category">About Flint Android</string>
+    <string name="flint_upstream_credit_title">PojavLauncher attribution</string>
+    <string name="flint_upstream_credit_summary">Flint Android is derived from PojavLauncher and builds on its Android Minecraft: Java Edition platform work. Original copyrights and licenses remain with their respective authors.</string>
     <string name="autoram_info_msg">Memory set to %d MB</string>
     <string name="mcl_setting_check_libraries">Check libraries after downloading</string>
     <string name="mcl_setting_check_libraries_subtitle">This option forces the launcher to check the library hash if it\'s available. Prevents broken downloads.</string>

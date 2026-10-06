@@ -46,6 +46,38 @@
         <item name="drawableTint">@color/flint_home_accent</item>
     </style>
 
+    <style name="FlintTopNavigationButton" parent="Widget.AppCompat.Button.Borderless">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:background">@drawable/flint_nav_item</item>
+        <item name="android:fontFamily">@font/noto_sans_bold</item>
+        <item name="android:gravity">center</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:paddingStart">15dp</item>
+        <item name="android:paddingEnd">15dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@color/flint_nav_text</item>
+        <item name="android:textSize">11sp</item>
+    </style>
+
+    <style name="FlintHeroToolButton" parent="Widget.AppCompat.Button">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:background">@drawable/flint_home_action_button</item>
+        <item name="android:fontFamily">@font/noto_sans_bold</item>
+        <item name="android:gravity">center</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:paddingHorizontal">9dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@color/flint_home_text</item>
+        <item name="android:textSize">9sp</item>
+        <item name="drawableStartSize">18dp</item>
+        <item name="drawableTint">@color/flint_home_accent</item>
+    </style>
+
     <style name="ThickDivider">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">@dimen/_1sdp</item>

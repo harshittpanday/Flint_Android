@@ -171,12 +171,27 @@
                 </LinearLayout>
 
                 <TextView
+                    android:id="@+id/selected_profile_details"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="9dp"
-                    android:text="@string/home_change_profile_hint"
-                    android:textColor="@color/flint_home_quiet"
+                    android:text="@string/home_profile_unavailable"
+                    android:textColor="@color/flint_home_muted"
                     android:textSize="10sp" />
+
+                <Button
+                    android:id="@+id/performance_setup_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/flint_home_edit_button"
+                    android:fontFamily="@font/noto_sans_bold"
+                    android:minHeight="0dp"
+                    android:minWidth="0dp"
+                    android:text="@string/home_manage_setup"
+                    android:textAllCaps="false"
+                    android:textColor="@color/flint_home_accent"
+                    android:textSize="11sp" />
             </LinearLayout>
 
             <TextView
@@ -218,7 +233,7 @@
                     android:minHeight="0dp"
                     android:minWidth="0dp"
                     android:paddingHorizontal="14dp"
-                    android:text="@string/mcl_tab_wiki"
+                    android:text="@string/flint_desktop_link"
                     android:textAllCaps="false"
                     android:textColor="@color/flint_home_text"
                     android:textSize="11sp"
@@ -239,7 +254,7 @@
                     android:minHeight="0dp"
                     android:minWidth="0dp"
                     android:paddingHorizontal="14dp"
-                    android:text="@string/mcl_button_discord"
+                    android:text="@string/flint_android_link"
                     android:textAllCaps="false"
                     android:textColor="@color/flint_home_text"
                     android:textSize="11sp"
@@ -345,14 +360,6 @@
                     app:drawableTint="@color/flint_home_accent" />
             </LinearLayout>
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="22dp"
-                android:gravity="center"
-                android:text="@string/home_attribution"
-                android:textColor="@color/flint_home_quiet"
-                android:textSize="9sp" />
         </LinearLayout>
     </ScrollView>
 

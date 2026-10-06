@@ -39,6 +39,11 @@ import fr.spse.extended_view.ExtendedTextView;
  */
 public class mcVersionSpinner extends ExtendedTextView {
     private static final int VERSION_SPINNER_PROFILE_CREATE = 0;
+
+    public interface OnProfileSelectedListener {
+        void onProfileSelected(String profileKey);
+    }
+
     public mcVersionSpinner(@NonNull Context context) {
         super(context);
         init();
@@ -57,6 +62,7 @@ public class mcVersionSpinner extends ExtendedTextView {
     private PopupWindow mPopupWindow = null;
     private Object mPopupAnimation;
     private int mSelectedIndex;
+    private OnProfileSelectedListener mOnProfileSelectedListener;
 
     private final ProfileAdapter mProfileAdapter = new ProfileAdapter(new ProfileAdapterExtra[]{
             new ProfileAdapterExtra(VERSION_SPINNER_PROFILE_CREATE,
@@ -68,10 +74,16 @@ public class mcVersionSpinner extends ExtendedTextView {
     /** Set the selection AND saves it as a shared preference */
     public void setProfileSelection(int position){
         setSelection(position);
-        LauncherPreferences.DEFAULT_PREF.edit()
-                .putString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE,
-                        mProfileAdapter.getItem(position).toString())
-                .apply();
+        Object selectedItem = mProfileAdapter.getItem(position);
+        if (selectedItem instanceof String) {
+            String profileKey = (String) selectedItem;
+            LauncherPreferences.DEFAULT_PREF.edit()
+                    .putString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, profileKey)
+                    .apply();
+            if (mOnProfileSelectedListener != null) {
+                mOnProfileSelectedListener.onProfileSelected(profileKey);
+            }
+        }
     }
 
     public void setSelection(int position){
@@ -92,6 +104,12 @@ public class mcVersionSpinner extends ExtendedTextView {
     /** Reload profiles from the file, forcing the spinner to consider the new data */
     public void reloadProfiles(){
         mProfileAdapter.reloadProfiles();
+        String refreshedProfile = (String) ExtraCore.consumeValue(ExtraConstants.REFRESH_VERSION_SPINNER);
+        String selectedProfile = refreshedProfile != null && !DELETED_PROFILE.equals(refreshedProfile)
+                ? refreshedProfile
+                : LauncherPreferences.DEFAULT_PREF.getString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, "");
+        int profileIndex = mProfileAdapter.resolveProfileIndex(selectedProfile);
+        setProfileSelection(Math.max(0, profileIndex));
     }
 
     /** Initialize various behaviors */
@@ -197,5 +215,13 @@ public class mcVersionSpinner extends ExtendedTextView {
 
     public ProfileAdapter getProfileAdapter() {
         return mProfileAdapter;
+    }
+
+    public void setOnProfileSelectedListener(@Nullable OnProfileSelectedListener listener) {
+        mOnProfileSelectedListener = listener;
+        Object selectedItem = mProfileAdapter.getItem(mSelectedIndex);
+        if (listener != null && selectedItem instanceof String) {
+            listener.onProfileSelected((String) selectedItem);
+        }
     }
 }

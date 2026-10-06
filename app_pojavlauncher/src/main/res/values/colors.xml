@@ -28,4 +28,7 @@
     <color name="flint_home_accent_strong">#FF982F</color>
     <color name="flint_home_accent_pressed">#DB5C0A</color>
     <color name="flint_home_play_text">#17110C</color>
+    <color name="flint_shell_header">#0B0D0B</color>
+    <color name="flint_shell_header_line">#242923</color>
+    <color name="flint_shell_chip">#141714</color>
 </resources>

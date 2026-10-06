@@ -66,6 +66,14 @@
         android:key="notification_permission_request"
         />
 
+    <PreferenceCategory android:title="@string/flint_about_category">
+        <Preference
+            android:key="flint_upstream_credit"
+            android:selectable="false"
+            android:title="@string/flint_upstream_credit_title"
+            android:summary="@string/flint_upstream_credit_summary" />
+    </PreferenceCategory>
+
 
 
 

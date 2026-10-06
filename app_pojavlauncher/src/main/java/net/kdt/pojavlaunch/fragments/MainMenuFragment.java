@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -45,13 +46,15 @@ public class MainMenuFragment extends Fragment {
         Button mInstallJarButton = view.findViewById(R.id.install_jar_button);
         Button mShareLogsButton = view.findViewById(R.id.share_logs_button);
         Button mOpenDirectoryButton = view.findViewById(R.id.open_files_button);
+        Button mPerformanceSetupButton = view.findViewById(R.id.performance_setup_button);
+        TextView mProfileDetails = view.findViewById(R.id.selected_profile_details);
 
         ImageButton mEditProfileButton = view.findViewById(R.id.edit_profile_button);
         Button mPlayButton = view.findViewById(R.id.play_button);
         mVersionSpinner = view.findViewById(R.id.mc_version_spinner);
 
-        mNewsButton.setOnClickListener(v -> Tools.openURL(requireActivity(), Tools.URL_HOME));
-        mDiscordButton.setOnClickListener(v -> Tools.openURL(requireActivity(), getString(R.string.discord_invite)));
+        mNewsButton.setOnClickListener(v -> Tools.openURL(requireActivity(), getString(R.string.flint_desktop_url)));
+        mDiscordButton.setOnClickListener(v -> Tools.openURL(requireActivity(), getString(R.string.flint_android_url)));
         mCustomControlButton.setOnClickListener(v -> startActivity(new Intent(requireContext(), CustomControlsActivity.class)));
         mInstallJarButton.setOnClickListener(v -> runInstallerWithConfirmation(false));
         mInstallJarButton.setOnLongClickListener(v->{
@@ -59,6 +62,8 @@ public class MainMenuFragment extends Fragment {
             return true;
         });
         mEditProfileButton.setOnClickListener(v -> mVersionSpinner.openProfileEditor(requireActivity()));
+        mPerformanceSetupButton.setOnClickListener(v -> mVersionSpinner.openProfileEditor(requireActivity()));
+        mVersionSpinner.setOnProfileSelectedListener(profileKey -> updateProfileDetails(mProfileDetails, profileKey));
 
         mPlayButton.setOnClickListener(v -> ExtraCore.setValue(ExtraConstants.LAUNCH_GAME, true));
 
@@ -88,6 +93,24 @@ public class MainMenuFragment extends Fragment {
         MinecraftProfile profileObject = LauncherProfiles.mainProfileJson.profiles.get(currentProfile);
         if(profileObject == null) return new File(Tools.DIR_GAME_NEW);
         return Tools.getGameDirPath(profileObject);
+    }
+
+    private void updateProfileDetails(TextView detailsView, String profileKey) {
+        LauncherProfiles.load();
+        MinecraftProfile profile = LauncherProfiles.mainProfileJson.profiles.get(profileKey);
+        if (profile == null || profile.lastVersionId == null) {
+            detailsView.setText(R.string.home_profile_unavailable);
+            return;
+        }
+
+        String versionId = profile.lastVersionId;
+        String normalized = versionId.toLowerCase();
+        String loader = getString(R.string.home_loader_vanilla);
+        if (normalized.contains("fabric")) loader = getString(R.string.home_loader_fabric);
+        else if (normalized.contains("forge")) loader = getString(R.string.home_loader_forge);
+        else if (normalized.contains("quilt")) loader = getString(R.string.home_loader_quilt);
+        else if (normalized.contains("optifine")) loader = getString(R.string.home_loader_optifine);
+        detailsView.setText(getString(R.string.home_profile_details, versionId, loader));
     }
 
     @Override

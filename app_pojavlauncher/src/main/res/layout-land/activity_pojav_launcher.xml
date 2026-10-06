@@ -1,53 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/transparent">
+    android:background="@color/flint_home_background">
 
-    <com.kdt.mcgui.mcAccountSpinner
-        android:id="@+id/account_spinner"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/_42sdp"
-
-        android:dropDownWidth="wrap_content"
-        android:dropDownVerticalOffset="@dimen/_42sdp"
-
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
-
-    <ImageButton
-        android:id="@+id/setting_button"
-        android:layout_width="@dimen/_52sdp"
-        android:layout_height="@dimen/_42sdp"
-        android:background="?attr/selectableItemBackground"
-        android:src="@drawable/ic_menu_settings"
-        android:scaleType="fitCenter"
-
+    <LinearLayout
+        android:id="@+id/flint_top_navigation"
+        android:layout_width="0dp"
+        android:layout_height="58dp"
+        android:background="@drawable/flint_shell_header"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="14dp"
+        android:paddingEnd="10dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
+        <ImageView
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:contentDescription="@null"
+            android:src="@mipmap/ic_launcher_round" />
 
+        <LinearLayout
+            android:layout_width="116dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="9dp"
+            android:orientation="vertical">
 
-    <!-- Holding most of the dynamic content -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/noto_sans_bold"
+                android:letterSpacing="0.12"
+                android:text="@string/app_short_name"
+                android:textAllCaps="true"
+                android:textColor="@color/flint_home_text"
+                android:textSize="14sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:letterSpacing="0.08"
+                android:text="@string/home_brand_subtitle"
+                android:textAllCaps="true"
+                android:textColor="@color/flint_home_quiet"
+                android:textSize="7sp" />
+        </LinearLayout>
+
+        <HorizontalScrollView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:fillViewport="true"
+            android:overScrollMode="never"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <Button android:id="@+id/nav_home_button" style="@style/FlintTopNavigationButton" android:text="@string/flint_nav_home" />
+                <Button android:id="@+id/nav_profiles_button" style="@style/FlintTopNavigationButton" android:text="@string/flint_nav_profiles" />
+                <Button android:id="@+id/nav_mods_button" style="@style/FlintTopNavigationButton" android:text="@string/flint_nav_mods" />
+                <Button android:id="@+id/nav_cosmetics_button" style="@style/FlintTopNavigationButton" android:text="@string/flint_nav_cosmetics" />
+                <Button android:id="@+id/nav_settings_button" style="@style/FlintTopNavigationButton" android:text="@string/flint_nav_settings" />
+            </LinearLayout>
+        </HorizontalScrollView>
+
+        <LinearLayout
+            android:layout_width="220dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/flint_account_chip"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="8dp">
+
+            <LinearLayout
+                android:layout_width="52dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/noto_sans_bold"
+                    android:text="@string/flint_account_label"
+                    android:textAllCaps="true"
+                    android:textColor="@color/flint_home_muted"
+                    android:textSize="7sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/flint_local_mode"
+                    android:textColor="@color/flint_home_accent"
+                    android:textSize="7sp" />
+            </LinearLayout>
+
+            <com.kdt.mcgui.mcAccountSpinner
+                android:id="@+id/account_spinner"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:dropDownVerticalOffset="44dp"
+                android:dropDownWidth="220dp" />
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/setting_button"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:layout_marginStart="6dp"
+            android:background="@drawable/flint_home_edit_button"
+            android:contentDescription="@string/flint_nav_settings"
+            android:padding="11dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_menu_settings"
+            app:tint="@color/flint_home_muted" />
+    </LinearLayout>
+
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/container_fragment"
-
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/progress_layout"
-        app:layout_constraintTop_toBottomOf="@+id/account_spinner" />
-
+        app:layout_constraintBottom_toTopOf="@id/progress_layout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/flint_top_navigation" />
 
     <com.kdt.mcgui.ProgressLayout
         android:id="@+id/progress_layout"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-
-        app:layout_constraintBottom_toBottomOf="parent" />
-
-
-
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
