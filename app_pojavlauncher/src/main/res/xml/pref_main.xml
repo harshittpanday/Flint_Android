@@ -52,6 +52,13 @@
             android:summary="@string/preference_experimental_description"
             android:fragment="net.kdt.pojavlaunch.prefs.screens.LauncherPreferenceExperimentalFragment"
             />
+
+        <Preference
+            android:key="flint_launcher_tools"
+            android:title="@string/flint_tools_title"
+            android:summary="@string/flint_tools_description"
+            android:fragment="net.kdt.pojavlaunch.fragments.FlintToolsFragment"
+            android:icon="@drawable/ic_setting_misc" />
     </PreferenceCategory>
 
     <SwitchPreference

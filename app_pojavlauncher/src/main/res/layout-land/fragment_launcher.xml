@@ -1,258 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/fragment_menu_main"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/flint_home_background"
-    android:orientation="vertical"
-    android:paddingStart="16dp"
-    android:paddingTop="12dp"
-    android:paddingEnd="16dp"
-    android:paddingBottom="12dp">
-
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
-
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:contentDescription="@null"
-            android:scaleType="centerCrop"
-            android:src="@drawable/flint_desktop_home_hero" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@drawable/flint_hero_scrim" />
-
-        <LinearLayout
-            android:layout_width="380dp"
-            android:layout_height="match_parent"
-            android:gravity="center_vertical"
-            android:orientation="vertical"
-            android:paddingStart="24dp"
-            android:paddingTop="16dp"
-            android:paddingEnd="22dp"
-            android:paddingBottom="16dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/noto_sans_bold"
-                android:letterSpacing="0.14"
-                android:text="@string/home_ready_to_play"
-                android:textAllCaps="true"
-                android:textColor="@color/flint_home_accent"
-                android:textSize="9sp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:fontFamily="@font/noto_sans_bold"
-                android:text="@string/home_game_title"
-                android:textColor="@color/flint_home_text"
-                android:textSize="24sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="@string/home_playing_on_android"
-                android:textColor="@color/flint_home_muted"
-                android:textSize="10sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:fontFamily="@font/noto_sans_bold"
-                android:letterSpacing="0.1"
-                android:text="@string/home_selected_profile"
-                android:textAllCaps="true"
-                android:textColor="@color/flint_home_muted"
-                android:textSize="8sp" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:layout_marginTop="6dp"
-                android:background="@drawable/flint_home_profile_selector"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingEnd="7dp">
-
-                <com.kdt.mcgui.mcVersionSpinner
-                    android:id="@+id/mc_version_spinner"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:background="@android:color/transparent"
-                    android:drawableEnd="@drawable/spinner_arrow"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:textColor="@color/flint_home_text"
-                    app:drawableEndPadding="@dimen/_1sdp"
-                    app:drawableEndSize="16dp"
-                    app:drawableStartIntegerScaling="true"
-                    app:drawableStartSize="36dp"
-                    tools:text="Performance - Minecraft 1.21.1" />
-
-                <ImageButton
-                    android:id="@+id/edit_profile_button"
-                    android:layout_width="44dp"
-                    android:layout_height="44dp"
-                    android:background="@drawable/flint_home_edit_button"
-                    android:contentDescription="@string/home_edit_profile"
-                    android:padding="12dp"
-                    android:src="@drawable/ic_edit_profile"
-                    app:tint="@color/flint_home_accent" />
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent" android:layout_height="match_parent" android:background="@color/flint_home_background"
+    android:orientation="vertical" android:padding="12dp">
+    <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
+        <ImageView android:layout_width="match_parent" android:layout_height="match_parent" android:contentDescription="@null" android:scaleType="centerCrop" android:src="@drawable/flint_desktop_home_hero" />
+        <View android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/flint_hero_scrim" />
+        <LinearLayout android:layout_width="390dp" android:layout_height="match_parent" android:gravity="center_vertical" android:orientation="vertical" android:paddingHorizontal="24dp" android:paddingVertical="12dp">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:fontFamily="@font/noto_sans_bold" android:letterSpacing="0.14" android:text="@string/home_ready_to_play" android:textAllCaps="true" android:textColor="@color/flint_home_accent" android:textSize="9sp" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="3dp" android:fontFamily="@font/noto_sans_bold" android:text="@string/home_game_title" android:textColor="@color/flint_home_text" android:textSize="23sp" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:text="@string/home_playing_on_android" android:textColor="@color/flint_home_muted" android:textSize="10sp" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:fontFamily="@font/noto_sans_bold" android:letterSpacing="0.1" android:text="@string/home_selected_profile" android:textAllCaps="true" android:textColor="@color/flint_home_muted" android:textSize="8sp" />
+            <LinearLayout android:layout_width="match_parent" android:layout_height="56dp" android:layout_marginTop="5dp" android:background="@drawable/flint_home_profile_selector" android:gravity="center_vertical" android:orientation="horizontal" android:paddingEnd="7dp">
+                <com.kdt.mcgui.mcVersionSpinner android:id="@+id/mc_version_spinner" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:background="@android:color/transparent" android:drawableEnd="@drawable/spinner_arrow" android:ellipsize="end" android:maxLines="1" android:textColor="@color/flint_home_text" app:drawableEndPadding="@dimen/_1sdp" app:drawableEndSize="16dp" app:drawableStartIntegerScaling="true" app:drawableStartSize="34dp" tools:text="Performance - Minecraft 1.21.1" />
+                <ImageButton android:id="@+id/edit_profile_button" android:layout_width="42dp" android:layout_height="42dp" android:background="@drawable/flint_home_edit_button" android:contentDescription="@string/home_edit_profile" android:padding="11dp" android:src="@drawable/ic_edit_profile" app:tint="@color/flint_home_accent" />
             </LinearLayout>
-
-            <TextView
-                android:id="@+id/selected_profile_details"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="7dp"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:text="@string/home_profile_unavailable"
-                android:textColor="@color/flint_home_muted"
-                android:textSize="10sp"
-                tools:text="Minecraft 1.21.1 · Fabric" />
-
-            <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/play_button"
-                android:layout_width="match_parent"
-                android:layout_height="58dp"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/flint_home_play_button"
-                android:drawableStart="@drawable/flint_home_play_icon"
-                android:drawablePadding="11dp"
-                android:fontFamily="@font/noto_sans_bold"
-                android:gravity="center"
-                android:letterSpacing="0.08"
-                android:minHeight="0dp"
-                android:minWidth="0dp"
-                android:text="@string/main_play"
-                android:textAllCaps="true"
-                android:textColor="@color/flint_home_play_text"
-                android:textSize="17sp" />
+            <TextView android:id="@+id/selected_profile_details" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="5dp" android:ellipsize="end" android:maxLines="1" android:text="@string/home_profile_unavailable" android:textColor="@color/flint_home_muted" android:textSize="10sp" />
+            <LinearLayout android:layout_width="match_parent" android:layout_height="50dp" android:layout_marginTop="9dp" android:orientation="horizontal">
+                <Button android:id="@+id/performance_setup_button" android:layout_width="116dp" android:layout_height="match_parent" android:layout_marginEnd="9dp" android:background="@drawable/flint_home_edit_button" android:fontFamily="@font/noto_sans_bold" android:minHeight="0dp" android:minWidth="0dp" android:text="@string/home_manage_setup" android:textAllCaps="false" android:textColor="@color/flint_home_accent" android:textSize="10sp" />
+                <androidx.appcompat.widget.AppCompatButton android:id="@+id/play_button" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:background="@drawable/flint_home_play_button" android:drawableStart="@drawable/flint_home_play_icon" android:drawablePadding="9dp" android:fontFamily="@font/noto_sans_bold" android:gravity="center" android:letterSpacing="0.08" android:minHeight="0dp" android:minWidth="0dp" android:text="@string/main_play" android:textAllCaps="true" android:textColor="@color/flint_home_play_text" android:textSize="16sp" />
+            </LinearLayout>
         </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="244dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end|bottom"
-            android:layout_marginEnd="18dp"
-            android:layout_marginBottom="18dp"
-            android:background="@drawable/flint_home_card"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/noto_sans_bold"
-                android:letterSpacing="0.12"
-                android:text="@string/home_performance_preset"
-                android:textAllCaps="true"
-                android:textColor="@color/flint_home_accent"
-                android:textSize="9sp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:fontFamily="@font/noto_sans_bold"
-                android:text="@string/home_performance_description"
-                android:textColor="@color/flint_home_text"
-                android:textSize="13sp" />
-
-            <Button
-                android:id="@+id/performance_setup_button"
-                android:layout_width="match_parent"
-                android:layout_height="42dp"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/flint_home_edit_button"
-                android:fontFamily="@font/noto_sans_bold"
-                android:minHeight="0dp"
-                android:minWidth="0dp"
-                android:text="@string/home_manage_setup"
-                android:textAllCaps="false"
-                android:textColor="@color/flint_home_accent"
-                android:textSize="10sp" />
-        </LinearLayout>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@drawable/flint_hero_border" />
+        <View android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/flint_hero_border" />
     </FrameLayout>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="9dp"
-        android:layout_marginBottom="6dp"
-        android:fontFamily="@font/noto_sans_bold"
-        android:letterSpacing="0.12"
-        android:text="@string/home_launcher_tools"
-        android:textAllCaps="true"
-        android:textColor="@color/flint_home_muted"
-        android:textSize="8sp" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:orientation="horizontal">
-
-        <fr.spse.extended_view.ExtendedButton
-            android:id="@+id/news_button"
-            style="@style/FlintHeroToolButton"
-            android:layout_marginEnd="4dp"
-            android:drawableStart="@drawable/ic_menu_news"
-            android:text="@string/flint_desktop_link" />
-
-        <fr.spse.extended_view.ExtendedButton
-            android:id="@+id/discord_button"
-            style="@style/FlintHeroToolButton"
-            android:layout_marginHorizontal="4dp"
-            android:drawableStart="@mipmap/ic_launcher_round"
-            android:text="@string/flint_android_link" />
-
-        <fr.spse.extended_view.ExtendedButton
-            android:id="@+id/custom_control_button"
-            style="@style/FlintHeroToolButton"
-            android:layout_marginHorizontal="4dp"
-            android:drawableStart="@drawable/ic_menu_custom_controls"
-            android:text="@string/mcl_option_customcontrol" />
-
-        <fr.spse.extended_view.ExtendedButton
-            android:id="@+id/install_jar_button"
-            style="@style/FlintHeroToolButton"
-            android:layout_marginHorizontal="4dp"
-            android:drawableStart="@drawable/ic_menu_install_jar"
-            android:text="@string/main_install_jar_file" />
-
-        <fr.spse.extended_view.ExtendedButton
-            android:id="@+id/share_logs_button"
-            style="@style/FlintHeroToolButton"
-            android:layout_marginHorizontal="4dp"
-            android:drawableStart="@android:drawable/ic_menu_share"
-            android:text="@string/main_share_logs" />
-
-        <fr.spse.extended_view.ExtendedButton
-            android:id="@+id/open_files_button"
-            style="@style/FlintHeroToolButton"
-            android:layout_marginStart="4dp"
-            android:drawableStart="@drawable/ic_folder"
-            android:text="@string/mcl_button_open_directory" />
+    <LinearLayout android:layout_width="match_parent" android:layout_height="44dp" android:layout_marginTop="8dp" android:orientation="horizontal">
+        <fr.spse.extended_view.ExtendedButton android:id="@+id/discord_button" style="@style/FlintHeroToolButton" android:layout_height="44dp" android:layout_marginEnd="5dp" android:drawableStart="@mipmap/ic_launcher_round" android:text="@string/flint_discord_link" />
+        <fr.spse.extended_view.ExtendedButton android:id="@+id/website_button" style="@style/FlintHeroToolButton" android:layout_height="44dp" android:layout_marginStart="5dp" android:drawableStart="@drawable/ic_menu_news" android:text="@string/flint_website_link" />
     </LinearLayout>
-
 </LinearLayout>

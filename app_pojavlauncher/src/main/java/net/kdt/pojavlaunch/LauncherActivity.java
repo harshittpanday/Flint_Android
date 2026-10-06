@@ -33,6 +33,8 @@ import net.kdt.pojavlaunch.fragments.MainMenuFragment;
 import net.kdt.pojavlaunch.fragments.MicrosoftLoginFragment;
 import net.kdt.pojavlaunch.fragments.ProfileEditorFragment;
 import net.kdt.pojavlaunch.fragments.ProfileTypeSelectFragment;
+import net.kdt.pojavlaunch.fragments.FlintProfilesFragment;
+import net.kdt.pojavlaunch.fragments.FlintToolsFragment;
 import net.kdt.pojavlaunch.fragments.SearchModFragment;
 import net.kdt.pojavlaunch.fragments.SelectAuthFragment;
 import net.kdt.pojavlaunch.lifecycle.ContextAwareDoneListener;
@@ -119,15 +121,15 @@ public class LauncherActivity extends BaseActivity {
             return false;
         }
 
-        String selectedProfile = LauncherPreferences.DEFAULT_PREF.getString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE,"");
-        if (LauncherProfiles.mainProfileJson == null || !LauncherProfiles.mainProfileJson.profiles.containsKey(selectedProfile)){
-            Toast.makeText(this, R.string.error_no_version, Toast.LENGTH_LONG).show();
-            return false;
-        }
-        MinecraftProfile prof = LauncherProfiles.mainProfileJson.profiles.get(selectedProfile);
+        LauncherProfiles.load();
+        MinecraftProfile prof = LauncherProfiles.getCurrentProfile();
         if (prof == null || prof.lastVersionId == null || "Unknown".equals(prof.lastVersionId)){
             Toast.makeText(this, R.string.error_no_version, Toast.LENGTH_LONG).show();
             return false;
+        }
+        if (prof.ramAllocation != null && prof.ramAllocation > 0) {
+            LauncherPreferences.PREF_RAM_ALLOCATION = prof.ramAllocation;
+            LauncherPreferences.DEFAULT_PREF.edit().putInt("allocation", prof.ramAllocation).commit();
         }
 
         if(mAccountSpinner.getSelectedAccount() == null){
@@ -224,7 +226,7 @@ public class LauncherActivity extends BaseActivity {
         mSettingsButton.setOnClickListener(mSettingButtonListener);
         mHomeNavigationButton.setOnClickListener(v -> Tools.backToMainMenu(this));
         mProfilesNavigationButton.setOnClickListener(v -> Tools.swapFragment(
-                this, ProfileEditorFragment.class, ProfileEditorFragment.TAG, null));
+                this, FlintProfilesFragment.class, FlintProfilesFragment.TAG, null));
         mModsNavigationButton.setOnClickListener(v -> Tools.swapFragment(
                 this, SearchModFragment.class, SearchModFragment.TAG, null));
         mCosmeticsNavigationButton.setOnClickListener(v -> Toast.makeText(
@@ -389,10 +391,12 @@ public class LauncherActivity extends BaseActivity {
 
     private void updateActiveNavigation(Fragment fragment) {
         mHomeNavigationButton.setSelected(fragment instanceof MainMenuFragment);
-        mProfilesNavigationButton.setSelected(fragment instanceof ProfileEditorFragment
+        mProfilesNavigationButton.setSelected(fragment instanceof FlintProfilesFragment
+                || fragment instanceof ProfileEditorFragment
                 || fragment instanceof ProfileTypeSelectFragment);
         mModsNavigationButton.setSelected(fragment instanceof SearchModFragment);
         mCosmeticsNavigationButton.setSelected(false);
-        mSettingsNavigationButton.setSelected(fragment instanceof LauncherPreferenceFragment);
+        mSettingsNavigationButton.setSelected(fragment instanceof LauncherPreferenceFragment
+                || fragment instanceof FlintToolsFragment);
     }
 }

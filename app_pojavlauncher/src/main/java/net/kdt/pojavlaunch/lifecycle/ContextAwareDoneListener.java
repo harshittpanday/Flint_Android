@@ -13,14 +13,17 @@ import net.kdt.pojavlaunch.lifecycle.ContextExecutor;
 import net.kdt.pojavlaunch.lifecycle.ContextExecutorTask;
 import net.kdt.pojavlaunch.progresskeeper.ProgressKeeper;
 import net.kdt.pojavlaunch.tasks.AsyncMinecraftDownloader;
+import net.kdt.pojavlaunch.tasks.LocalAccountMissingFilesException;
 import net.kdt.pojavlaunch.utils.NotificationUtils;
 
 public class ContextAwareDoneListener implements AsyncMinecraftDownloader.DoneListener, ContextExecutorTask {
     private final String mErrorString;
+    private final String mLocalAccountErrorString;
     private final String mNormalizedVersionid;
 
     public ContextAwareDoneListener(Context baseContext, String versionId) {
         this.mErrorString = baseContext.getString(R.string.mc_download_failed);
+        this.mLocalAccountErrorString = baseContext.getString(R.string.flint_local_missing_files);
         this.mNormalizedVersionid = versionId;
     }
 
@@ -38,7 +41,8 @@ public class ContextAwareDoneListener implements AsyncMinecraftDownloader.DoneLi
 
     @Override
     public void onDownloadFailed(Throwable throwable) {
-        Tools.showErrorRemote(mErrorString, throwable);
+        Tools.showErrorRemote(throwable instanceof LocalAccountMissingFilesException
+                ? mLocalAccountErrorString : mErrorString, throwable);
     }
 
     @Override

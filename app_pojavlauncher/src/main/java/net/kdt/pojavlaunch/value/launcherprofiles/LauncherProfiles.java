@@ -6,23 +6,32 @@ import androidx.annotation.NonNull;
 
 import net.kdt.pojavlaunch.Tools;
 import net.kdt.pojavlaunch.prefs.LauncherPreferences;
+import net.kdt.pojavlaunch.profiles.ProfileSelection;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 public class LauncherProfiles {
     public static MinecraftLauncherProfiles mainProfileJson;
-    private static final File launcherProfilesFile = new File(Tools.GAME_PROFILES_FILE);
+
+    private static File getLauncherProfilesFile() {
+        return new File(Tools.GAME_PROFILES_FILE);
+    }
 
     /** Reload the profile from the file, creating a default one if necessary */
-    public static void load(){
+    public static synchronized void load(){
+        File launcherProfilesFile = getLauncherProfilesFile();
+        MinecraftLauncherProfiles loadedProfiles = null;
         if (launcherProfilesFile.exists()) {
             try {
-                mainProfileJson = Tools.GLOBAL_GSON.fromJson(Tools.read(launcherProfilesFile.getAbsolutePath()), MinecraftLauncherProfiles.class);
+                loadedProfiles = Tools.GLOBAL_GSON.fromJson(
+                        Tools.read(launcherProfilesFile.getAbsolutePath()), MinecraftLauncherProfiles.class);
             } catch (IOException e) {
                 Log.e(LauncherProfiles.class.toString(), "Failed to load file: ", e);
                 throw new RuntimeException(e);
@@ -30,22 +39,27 @@ public class LauncherProfiles {
         }
 
         // Fill with default
-        if (mainProfileJson == null) mainProfileJson = new MinecraftLauncherProfiles();
+        mainProfileJson = loadedProfiles == null ? new MinecraftLauncherProfiles() : loadedProfiles;
         if (mainProfileJson.profiles == null) mainProfileJson.profiles = new HashMap<>();
-        if (mainProfileJson.profiles.size() == 0)
+        boolean shouldWrite = false;
+        if (mainProfileJson.profiles.size() == 0) {
             mainProfileJson.profiles.put(UUID.randomUUID().toString(), MinecraftProfile.getDefaultProfile());
+            shouldWrite = true;
+        }
 
         // Normalize profile names from mod installers
-        if(normalizeProfileIds(mainProfileJson)){
-            write();
-            load();
+        if(normalizeProfileIds(mainProfileJson)) {
+            shouldWrite = true;
         }
+
+        if (shouldWrite) write();
+        repairSelectedProfile();
     }
 
     /** Apply the current configuration into a file */
-    public static void write() {
+    public static synchronized void write() {
         try {
-            Tools.write(launcherProfilesFile.getAbsolutePath(), mainProfileJson.toJson());
+            Tools.write(getLauncherProfilesFile().getAbsolutePath(), mainProfileJson.toJson());
         } catch (IOException e) {
             Log.e(LauncherProfiles.class.toString(), "Failed to write profile file", e);
             throw new RuntimeException(e);
@@ -53,11 +67,62 @@ public class LauncherProfiles {
     }
 
     public static @NonNull MinecraftProfile getCurrentProfile() {
-        if(mainProfileJson == null) LauncherProfiles.load();
-        String defaultProfileName = LauncherPreferences.DEFAULT_PREF.getString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, "");
-        MinecraftProfile profile = mainProfileJson.profiles.get(defaultProfileName);
-        if(profile == null) throw new RuntimeException("The current profile stopped existing :(");
+        LauncherProfiles.load();
+        String profileKey = repairSelectedProfile();
+        MinecraftProfile profile = mainProfileJson.profiles.get(profileKey);
+        if(profile == null) throw new IllegalStateException("No launcher profile is available");
         return profile;
+    }
+
+    public static @NonNull String getCurrentProfileKey() {
+        LauncherProfiles.load();
+        String profileKey = repairSelectedProfile();
+        if (profileKey == null) throw new IllegalStateException("No launcher profile is available");
+        return profileKey;
+    }
+
+    public static boolean selectProfile(String profileKey) {
+        if (mainProfileJson == null) load();
+        if (!mainProfileJson.profiles.containsKey(profileKey)) return false;
+        LauncherPreferences.DEFAULT_PREF.edit()
+                .putString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, profileKey)
+                .commit();
+        return true;
+    }
+
+    public static String deleteProfile(String profileKey) {
+        load();
+        if (mainProfileJson.profiles.size() <= 1 || !mainProfileJson.profiles.containsKey(profileKey)) {
+            return getCurrentProfileKey();
+        }
+        mainProfileJson.profiles.remove(profileKey);
+        write();
+        return repairSelectedProfile();
+    }
+
+    public static List<String> getSortedProfileKeys() {
+        load();
+        List<String> keys = new ArrayList<>(mainProfileJson.profiles.keySet());
+        keys.sort(Comparator
+                .comparing((String key) -> {
+                    MinecraftProfile profile = mainProfileJson.profiles.get(key);
+                    return profile == null || profile.name == null ? "" : profile.name.toLowerCase();
+                })
+                .thenComparing(key -> key));
+        return keys;
+    }
+
+    private static String repairSelectedProfile() {
+        if (LauncherPreferences.DEFAULT_PREF == null || mainProfileJson == null) return null;
+        String requestedKey = LauncherPreferences.DEFAULT_PREF.getString(
+                LauncherPreferences.PREF_KEY_CURRENT_PROFILE, "");
+        String resolvedKey = ProfileSelection.resolve(requestedKey, mainProfileJson.profiles.keySet());
+        if (resolvedKey != null && !resolvedKey.equals(requestedKey)) {
+            LauncherPreferences.DEFAULT_PREF.edit()
+                    .putString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, resolvedKey)
+                    .commit();
+        }
+        return resolvedKey;
     }
 
     /**

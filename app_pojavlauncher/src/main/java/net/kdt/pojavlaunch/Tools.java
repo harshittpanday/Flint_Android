@@ -57,6 +57,7 @@ import net.kdt.pojavlaunch.memory.SelfMapsParser;
 import net.kdt.pojavlaunch.multirt.MultiRTUtils;
 import net.kdt.pojavlaunch.multirt.Runtime;
 import net.kdt.pojavlaunch.plugins.FFmpegPlugin;
+import net.kdt.pojavlaunch.tasks.LocalAccountMissingFilesException;
 import net.kdt.pojavlaunch.prefs.LauncherPreferences;
 import net.kdt.pojavlaunch.utils.DateUtils;
 import net.kdt.pojavlaunch.utils.DownloadUtils;
@@ -743,8 +744,11 @@ public final class Tools {
                             }
                         }
                     })
-                    .setNegativeButton(showMore ? R.string.error_show_less : R.string.error_show_more, (p1, p2) -> showError(ctx, titleId, rolledMessage, e, exitIfOk, !showMore))
-                    .setNeutralButton(android.R.string.copy, (p1, p2) -> {
+                    .setCancelable(!exitIfOk);
+            if (!(e instanceof LocalAccountMissingFilesException)) {
+                builder.setNegativeButton(showMore ? R.string.error_show_less : R.string.error_show_more,
+                        (p1, p2) -> showError(ctx, titleId, rolledMessage, e, exitIfOk, !showMore));
+                builder.setNeutralButton(android.R.string.copy, (p1, p2) -> {
                         ClipboardManager mgr = (ClipboardManager) ctx.getSystemService(Context.CLIPBOARD_SERVICE);
                         mgr.setPrimaryClip(ClipData.newPlainText("error", printToString(e)));
                         if(exitIfOk) {
@@ -754,8 +758,8 @@ public final class Tools {
                                 ((Activity) ctx).finish();
                             }
                         }
-                    })
-                    .setCancelable(!exitIfOk);
+                    });
+            }
             try {
                 builder.show();
             } catch (Throwable th) {

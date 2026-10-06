@@ -52,9 +52,10 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
     private String mValueToConsume = "";
     private Button mSaveButton, mDeleteButton, mControlSelectButton, mGameDirButton, mVersionSelectButton;
     private Spinner mDefaultRuntime, mDefaultRenderer;
-    private EditText mDefaultName, mDefaultJvmArgument;
+    private EditText mDefaultName, mDefaultJvmArgument, mDefaultMemory;
     private TextView mDefaultPath, mDefaultVersion, mDefaultControl;
     private ImageView mProfileIcon;
+    private boolean mIsCreatingProfile;
     private final ActivityResultLauncher<?> mCropperLauncher = CropperUtils.registerCropper(this, this);
 
     private List<String> mRenderNames;
@@ -99,9 +100,8 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
         mDeleteButton.setOnClickListener(v -> {
             if(LauncherProfiles.mainProfileJson.profiles.size() > 1){
                 ProfileIconCache.dropIcon(mProfileKey);
-                LauncherProfiles.mainProfileJson.profiles.remove(mProfileKey);
-                LauncherProfiles.write();
-                ExtraCore.setValue(ExtraConstants.REFRESH_VERSION_SPINNER, DELETED_PROFILE);
+                String selectedProfile = LauncherProfiles.deleteProfile(mProfileKey);
+                ExtraCore.setValue(ExtraConstants.REFRESH_VERSION_SPINNER, selectedProfile);
             }
 
             Tools.removeCurrentFragment(requireActivity());
@@ -125,6 +125,7 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
         mProfileIcon.setOnClickListener(v -> CropperUtils.startCropper(mCropperLauncher));
 
         loadValues(LauncherPreferences.DEFAULT_PREF.getString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, ""), view.getContext());
+        mDeleteButton.setVisibility(mIsCreatingProfile ? View.GONE : View.VISIBLE);
     }
 
     private View.OnClickListener getGameDirListener() {
@@ -190,6 +191,8 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
 
         mDefaultVersion.setText(mTempProfile.lastVersionId);
         mDefaultJvmArgument.setText(mTempProfile.javaArgs == null ? "" : mTempProfile.javaArgs);
+        mDefaultMemory.setText(String.valueOf(mTempProfile.ramAllocation == null
+                ? LauncherPreferences.PREF_RAM_ALLOCATION : mTempProfile.ramAllocation));
         mDefaultName.setText(mTempProfile.name);
         mDefaultPath.setText(mTempProfile.gameDir == null ? "" : mTempProfile.gameDir);
         mDefaultControl.setText(mTempProfile.controlFile == null ? "" : mTempProfile.controlFile);
@@ -214,6 +217,7 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
         }else{
             minecraftProfile = MinecraftProfile.createTemplate();
             mProfileKey = LauncherProfiles.getFreeProfileKey();
+            mIsCreatingProfile = true;
         }
         return minecraftProfile;
     }
@@ -228,6 +232,7 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
         mDefaultPath = view.findViewById(R.id.vprof_editor_path);
         mDefaultName = view.findViewById(R.id.vprof_editor_profile_name);
         mDefaultJvmArgument = view.findViewById(R.id.vprof_editor_jre_args);
+        mDefaultMemory = view.findViewById(R.id.vprof_editor_memory);
 
         mSaveButton = view.findViewById(R.id.vprof_editor_save_button);
         mDeleteButton = view.findViewById(R.id.vprof_editor_delete_button);
@@ -243,6 +248,12 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
         mTempProfile.controlFile = mDefaultControl.getText().toString();
         mTempProfile.name = mDefaultName.getText().toString();
         mTempProfile.javaArgs = mDefaultJvmArgument.getText().toString();
+        try {
+            int memory = Integer.parseInt(mDefaultMemory.getText().toString());
+            mTempProfile.ramAllocation = memory > 0 ? memory : null;
+        } catch (NumberFormatException ignored) {
+            mTempProfile.ramAllocation = null;
+        }
         mTempProfile.gameDir = mDefaultPath.getText().toString();
 
         if(mTempProfile.controlFile.isEmpty()) mTempProfile.controlFile = null;
@@ -259,6 +270,7 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
 
         LauncherProfiles.mainProfileJson.profiles.put(mProfileKey, mTempProfile);
         LauncherProfiles.write();
+        LauncherProfiles.selectProfile(mProfileKey);
         ExtraCore.setValue(ExtraConstants.REFRESH_VERSION_SPINNER, mProfileKey);
     }
 

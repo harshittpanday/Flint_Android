@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_app"
+    android:fillViewport="true">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:fontFamily="@font/noto_sans_bold" android:text="@string/flint_tools_title" android:textColor="@color/primary_text" android:textSize="22sp" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:layout_marginBottom="16dp" android:text="@string/flint_tools_description" android:textColor="@color/secondary_text" android:textSize="11sp" />
+        <Button android:id="@+id/tools_custom_controls" style="@style/FlintToolsButton" android:drawableStart="@drawable/ic_menu_custom_controls" android:text="@string/mcl_option_customcontrol" />
+        <Button android:id="@+id/tools_install_jar" style="@style/FlintToolsButton" android:drawableStart="@drawable/ic_menu_install_jar" android:text="@string/main_install_jar_file" />
+        <Button android:id="@+id/tools_share_logs" style="@style/FlintToolsButton" android:drawableStart="@android:drawable/ic_menu_share" android:text="@string/main_share_logs" />
+        <Button android:id="@+id/tools_open_files" style="@style/FlintToolsButton" android:drawableStart="@drawable/ic_folder" android:text="@string/mcl_button_open_directory" />
+    </LinearLayout>
+</ScrollView>

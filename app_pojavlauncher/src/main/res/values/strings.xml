@@ -166,7 +166,6 @@
     <string name="home_quick_access">Quick access</string>
     <string name="home_tools_subtitle">Launcher tools and community</string>
     <string name="home_ready_to_launch">Your game is ready</string>
-    <string name="home_attribution">Flint Android · Built on PojavLauncher</string>
     <string name="flint_nav_home">Home</string>
     <string name="flint_nav_profiles">Profiles</string>
     <string name="flint_nav_mods">Mods</string>
@@ -175,10 +174,10 @@
     <string name="flint_account_label">Account</string>
     <string name="flint_local_mode">Local launcher</string>
     <string name="flint_cosmetics_deferred">Cosmetics are planned for a later Flint Android phase.</string>
-    <string name="flint_desktop_link">Flint Desktop</string>
-    <string name="flint_android_link">Flint Android</string>
-    <string name="flint_desktop_url" translatable="false">https://github.com/harshittpanday/Flint</string>
-    <string name="flint_android_url" translatable="false">https://github.com/harshittpanday/Flint_Android</string>
+    <string name="flint_discord_link">Flint Discord</string>
+    <string name="flint_website_link">Flint website</string>
+    <string name="flint_discord_url" translatable="false">https://discord.gg/atWfHfwjYy</string>
+    <string name="flint_website_url" translatable="false">https://flintlauncher.vercel.app</string>
     <string name="home_playing_on_android">Playing on Flint Android</string>
     <string name="home_profile_details">Minecraft %1$s · %2$s</string>
     <string name="home_profile_unavailable">Choose or create a profile to continue</string>
@@ -190,7 +189,19 @@
     <string name="home_performance_preset">Performance preset</string>
     <string name="home_performance_description">Profile-specific renderer, memory and controls</string>
     <string name="home_manage_setup">Manage setup</string>
-    <string name="home_launcher_tools">Launcher tools</string>
+    <string name="home_flint_community">Flint community</string>
+    <string name="flint_tools_title">Launcher tools</string>
+    <string name="flint_tools_description">Controls, installers, logs and game files</string>
+    <string name="flint_profiles_title">Profiles</string>
+    <string name="flint_profiles_subtitle">Create, select and configure independent Minecraft setups.</string>
+    <string name="flint_profile_add">New profile</string>
+    <string name="flint_profile_active">Active</string>
+    <string name="flint_profile_keep_one">Flint needs at least one profile.</string>
+    <string name="flint_profile_delete_title">Delete profile?</string>
+    <string name="flint_profile_delete_message">Delete %1$s and its launcher settings? Game files are not removed.</string>
+    <string name="flint_local_missing_files">This local account can launch only when all required game files are already installed and verified. A required file is missing or changed. Sign in with an entitled Microsoft account to download it, or restore a legitimate local installation.</string>
+    <string name="flint_profile_memory">Profile memory (MB)</string>
+    <string name="flint_profile_memory_hint">Use global memory setting</string>
     <string name="flint_about_category">About Flint Android</string>
     <string name="flint_upstream_credit_title">PojavLauncher attribution</string>
     <string name="flint_upstream_credit_summary">Flint Android is derived from PojavLauncher and builds on its Android Minecraft: Java Edition platform work. Original copyrights and licenses remain with their respective authors.</string>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="72dp"
+    android:background="@drawable/flint_home_profile_selector"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingHorizontal="14dp">
+
+    <ImageView
+        android:id="@+id/flint_profile_icon"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:contentDescription="@null" />
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="13dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/flint_profile_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:fontFamily="@font/noto_sans_bold"
+            android:maxLines="1"
+            android:textColor="@color/primary_text"
+            android:textSize="14sp" />
+        <TextView
+            android:id="@+id/flint_profile_details"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="@color/secondary_text"
+            android:textSize="10sp" />
+    </LinearLayout>
+    <TextView
+        android:id="@+id/flint_profile_selected"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="10dp"
+        android:text="@string/flint_profile_active"
+        android:textColor="@color/flint_home_accent"
+        android:textSize="10sp" />
+    <ImageButton
+        android:id="@+id/flint_profile_edit"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:background="@drawable/flint_home_edit_button"
+        android:contentDescription="@string/home_edit_profile"
+        android:padding="11dp"
+        android:src="@drawable/ic_edit_profile"
+        app:tint="@color/flint_home_accent" />
+    <ImageButton
+        android:id="@+id/flint_profile_delete"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:layout_marginStart="8dp"
+        android:background="@drawable/flint_home_edit_button"
+        android:contentDescription="@string/global_delete"
+        android:padding="11dp"
+        android:src="@drawable/ic_menu_delete_forever"
+        app:tint="@color/secondary_text" />
+</LinearLayout>

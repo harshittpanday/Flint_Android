@@ -16,7 +16,6 @@ import net.kdt.pojavlaunch.value.launcherprofiles.LauncherProfiles;
 import net.kdt.pojavlaunch.value.launcherprofiles.MinecraftProfile;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,7 +74,7 @@ public class ProfileAdapter extends BaseAdapter {
     @Override
     public void notifyDataSetChanged() {
         mProfiles = new HashMap<>(LauncherProfiles.mainProfileJson.profiles);
-        mProfileList = new ArrayList<>(Arrays.asList(mProfiles.keySet().toArray(new String[0])));
+        mProfileList = new ArrayList<>(LauncherProfiles.getSortedProfileKeys());
         super.notifyDataSetChanged();
     }
 
@@ -137,7 +136,7 @@ public class ProfileAdapter extends BaseAdapter {
     public void reloadProfiles(){
         LauncherProfiles.load();
         mProfiles = new HashMap<>(LauncherProfiles.mainProfileJson.profiles);
-        mProfileList = new ArrayList<>(Arrays.asList(mProfiles.keySet().toArray(new String[0])));
+        mProfileList = new ArrayList<>(LauncherProfiles.getSortedProfileKeys());
         notifyDataSetChanged();
     }
 

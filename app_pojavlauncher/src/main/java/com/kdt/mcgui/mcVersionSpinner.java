@@ -27,9 +27,9 @@ import net.kdt.pojavlaunch.extra.ExtraConstants;
 import net.kdt.pojavlaunch.extra.ExtraCore;
 import net.kdt.pojavlaunch.fragments.ProfileEditorFragment;
 import net.kdt.pojavlaunch.fragments.ProfileTypeSelectFragment;
-import net.kdt.pojavlaunch.prefs.LauncherPreferences;
 import net.kdt.pojavlaunch.profiles.ProfileAdapter;
 import net.kdt.pojavlaunch.profiles.ProfileAdapterExtra;
+import net.kdt.pojavlaunch.value.launcherprofiles.LauncherProfiles;
 
 import fr.spse.extended_view.ExtendedTextView;
 
@@ -77,9 +77,7 @@ public class mcVersionSpinner extends ExtendedTextView {
         Object selectedItem = mProfileAdapter.getItem(position);
         if (selectedItem instanceof String) {
             String profileKey = (String) selectedItem;
-            LauncherPreferences.DEFAULT_PREF.edit()
-                    .putString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, profileKey)
-                    .apply();
+            LauncherProfiles.selectProfile(profileKey);
             if (mOnProfileSelectedListener != null) {
                 mOnProfileSelectedListener.onProfileSelected(profileKey);
             }
@@ -107,7 +105,7 @@ public class mcVersionSpinner extends ExtendedTextView {
         String refreshedProfile = (String) ExtraCore.consumeValue(ExtraConstants.REFRESH_VERSION_SPINNER);
         String selectedProfile = refreshedProfile != null && !DELETED_PROFILE.equals(refreshedProfile)
                 ? refreshedProfile
-                : LauncherPreferences.DEFAULT_PREF.getString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, "");
+                : LauncherProfiles.getCurrentProfileKey();
         int profileIndex = mProfileAdapter.resolveProfileIndex(selectedProfile);
         setProfileSelection(Math.max(0, profileIndex));
     }
@@ -129,7 +127,7 @@ public class mcVersionSpinner extends ExtendedTextView {
                     : getProfileAdapter().resolveProfileIndex(extra_value);
         }else
             profileIndex = mProfileAdapter.resolveProfileIndex(
-                    LauncherPreferences.DEFAULT_PREF.getString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE,""));
+                    LauncherProfiles.getCurrentProfileKey());
 
         setProfileSelection(Math.max(0,profileIndex));
 
