@@ -11,6 +11,7 @@ import android.util.Log;
 import com.kdt.mcgui.ProgressLayout;
 
 import net.kdt.pojavlaunch.Tools;
+import net.kdt.pojavlaunch.Architecture;
 import net.kdt.pojavlaunch.multirt.MultiRTUtils;
 
 import org.apache.commons.io.FileUtils;
@@ -32,28 +33,38 @@ public class AsyncAssetManager {
         /* Check if JRE is included */
         String rt_version = null;
         String current_rt_version = MultiRTUtils.readInternalRuntimeVersion("Internal");
+        boolean internalRuntimeValid = MultiRTUtils.isRuntimeValid("Internal", 8,
+                Tools.DEVICE_ARCHITECTURE);
         try {
             rt_version = Tools.read(am.open("components/jre/version"));
         } catch (IOException e) {
-            Log.e("JREAuto", "JRE was not included on this APK.", e);
+            if (!internalRuntimeValid) {
+                Log.e("JREAuto", "Java 8 was not included in this APK and no valid internal copy is installed.", e);
+            }
         }
         String exactJREName = MultiRTUtils.getExactJreName(8);
         if(current_rt_version == null && exactJREName != null && !exactJREName.equals("Internal")/*this clause is for when the internal runtime is goofed*/) return;
         if(rt_version == null) return;
-        if(rt_version.equals(current_rt_version)) return;
+        if(rt_version.equals(current_rt_version) && internalRuntimeValid) return;
+
+        String architecture = archAsString(Tools.DEVICE_ARCHITECTURE);
+        if (Tools.DEVICE_ARCHITECTURE == Architecture.UNSUPPORTED_ARCH) {
+            Log.e("JREAuto", "Cannot install Java 8 for unsupported architecture: " + architecture);
+            return;
+        }
 
         // Install the runtime in an async manner, hope for the best
         String finalRt_version = rt_version;
         sExecutorService.execute(() -> {
 
             try {
-                MultiRTUtils.installRuntimeNamedBinpack(
+                MultiRTUtils.installRuntimeNamedBinpackAtomically(
                         am.open("components/jre/universal.tar.xz"),
-                        am.open("components/jre/bin-" + archAsString(Tools.DEVICE_ARCHITECTURE) + ".tar.xz"),
-                        "Internal", finalRt_version);
-                MultiRTUtils.postPrepare("Internal");
+                        am.open("components/jre/bin-" + architecture + ".tar.xz"),
+                        "Internal", finalRt_version, 8, Tools.DEVICE_ARCHITECTURE);
             }catch (IOException e) {
-                Log.e("JREAuto", "Internal JRE unpack failed", e);
+                Log.e("JREAuto", "Java 8 installation failed for " + architecture
+                        + " in " + Tools.MULTIRT_HOME + ": " + e.getMessage(), e);
             }
         });
     }

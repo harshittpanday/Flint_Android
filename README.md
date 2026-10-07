@@ -59,16 +59,20 @@ Flint Android will use Flint's established visual identity:
 - Android SDK Platform 34
 - Android Build Tools 34
 - Android NDK `25.2.9519653`
+- PowerShell (for reproducible runtime provisioning)
 
 Clone and build a debug APK:
 
 ```bash
 git clone https://github.com/harshittpanday/Flint_Android.git
 cd Flint_Android
+pwsh ./scripts/prepare_java_runtimes.ps1
 ./gradlew :app_pojavlauncher:assembleDebug
 ```
 
-On Windows, use `gradlew.bat` instead of `./gradlew`.
+On Windows PowerShell, run `./scripts/prepare_java_runtimes.ps1` and use `gradlew.bat` instead of `./gradlew`.
+The provisioning script verifies the pinned official PojavLauncher release APK, then extracts its inherited
+Java 8, 17, and 21 Android runtime components. These generated runtime directories remain excluded from Git.
 
 ## Visual assets
 

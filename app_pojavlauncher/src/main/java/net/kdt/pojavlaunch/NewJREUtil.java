@@ -43,26 +43,14 @@ public class NewJREUtil {
             throw new RuntimeInstallationException("Java " + internalRuntime.majorVersion
                     + " cannot be installed on unsupported CPU architecture: " + architecture);
         }
-        String stagedRuntimeName = internalRuntime.name + ".installing";
         try {
-            MultiRTUtils.removeRuntimeNamed(stagedRuntimeName);
-            MultiRTUtils.installRuntimeNamedBinpack(
+            MultiRTUtils.installRuntimeNamedBinpackAtomically(
                     assetManager.open(internalRuntime.path+"/universal.tar.xz"),
                     assetManager.open(internalRuntime.path+"/bin-" + architecture + ".tar.xz"),
-                    stagedRuntimeName, version);
-            MultiRTUtils.postPrepare(stagedRuntimeName);
-            if (!MultiRTUtils.isRuntimeValid(stagedRuntimeName, internalRuntime.majorVersion,
-                    Tools.DEVICE_ARCHITECTURE)) {
-                throw new IOException("extracted runtime failed release, binary, or architecture validation");
-            }
-            MultiRTUtils.replaceRuntimeNamed(stagedRuntimeName, internalRuntime.name);
+                    internalRuntime.name, version, internalRuntime.majorVersion,
+                    Tools.DEVICE_ARCHITECTURE);
             return true;
         }catch (IOException e) {
-            try {
-                MultiRTUtils.removeRuntimeNamed(stagedRuntimeName);
-            } catch (IOException cleanupError) {
-                e.addSuppressed(cleanupError);
-            }
             String runtimeRoot = new java.io.File(Tools.MULTIRT_HOME).getAbsolutePath();
             RuntimeInstallationException failure = new RuntimeInstallationException(
                     "Failed to install Java " + internalRuntime.majorVersion + " for " + architecture

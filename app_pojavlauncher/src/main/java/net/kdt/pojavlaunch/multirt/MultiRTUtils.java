@@ -105,20 +105,52 @@ public class MultiRTUtils {
         unpack200(NATIVE_LIB_DIR,RUNTIME_FOLDER + "/" + name);
 
         File binpack_verfile = new File(RUNTIME_FOLDER,"/"+name+"/pojav_version");
-        FileOutputStream fos = new FileOutputStream(binpack_verfile);
-        fos.write(binpackVersion.getBytes());
-        fos.close();
+        try (FileOutputStream fos = new FileOutputStream(binpack_verfile)) {
+            fos.write(binpackVersion.getBytes());
+        }
 
         ProgressLayout.clearProgress(ProgressLayout.UNPACK_RUNTIME);
 
         forceReread(name);
     }
 
+    public static void installRuntimeNamedBinpackAtomically(InputStream universalFileInputStream,
+                                                             InputStream platformBinsInputStream,
+                                                             String name, String binpackVersion,
+                                                             int expectedJavaVersion,
+                                                             int expectedArchitecture) throws IOException {
+        String stagedName = name + ".installing";
+        removeRuntimeNamed(stagedName);
+        try (InputStream universalInput = universalFileInputStream;
+             InputStream platformInput = platformBinsInputStream) {
+            installRuntimeNamedBinpack(universalInput, platformInput,
+                    stagedName, binpackVersion);
+            postPrepare(stagedName);
+            if (!isRuntimeValid(stagedName, expectedJavaVersion, expectedArchitecture)) {
+                throw new IOException("extracted runtime failed release, binary, or architecture validation");
+            }
+            replaceRuntimeNamed(stagedName, name);
+        } catch (IOException installError) {
+            try {
+                removeRuntimeNamed(stagedName);
+            } catch (IOException cleanupError) {
+                installError.addSuppressed(cleanupError);
+            }
+            throw installError;
+        }
+    }
+
     public static boolean isRuntimeValid(String name, int expectedJavaVersion, int expectedArchitecture) {
         File dest = new File(RUNTIME_FOLDER, name);
         File javaBinary = new File(dest, "bin/java");
         File jvmConfig = new File(dest, "lib/jvm.cfg");
-        Runtime runtime = forceReread(name);
+        Runtime runtime;
+        try {
+            runtime = forceReread(name);
+        } catch (RuntimeException invalidReleaseMetadata) {
+            Log.w("MultiRT", "Runtime release metadata is invalid for " + name, invalidReleaseMetadata);
+            return false;
+        }
         return dest.isDirectory()
                 && javaBinary.isFile() && javaBinary.length() > 0
                 && jvmConfig.isFile() && jvmConfig.length() > 0
@@ -264,51 +296,48 @@ public class MultiRTUtils {
         final String canonicalDestinationPrefix = canonicalDestination + File.separator;
 
         byte[] buffer = new byte[8192];
-        TarArchiveInputStream tarIn = new TarArchiveInputStream(
-                new XZCompressorInputStream(tarFileInputStream)
-        );
-        TarArchiveEntry tarEntry = tarIn.getNextTarEntry();
-        // tarIn is a TarArchiveInputStream
-        while (tarEntry != null) {
+        try (TarArchiveInputStream tarIn = new TarArchiveInputStream(
+                new XZCompressorInputStream(tarFileInputStream))) {
+            TarArchiveEntry tarEntry = tarIn.getNextTarEntry();
+            while (tarEntry != null) {
+                final String tarEntryName = tarEntry.getName();
+                // publishProgress(null, "Unpacking " + tarEntry.getName());
+                ProgressLayout.setProgress(ProgressLayout.UNPACK_RUNTIME, 100, R.string.global_unpacking, tarEntryName);
 
-            final String tarEntryName = tarEntry.getName();
-            // publishProgress(null, "Unpacking " + tarEntry.getName());
-            ProgressLayout.setProgress(ProgressLayout.UNPACK_RUNTIME, 100, R.string.global_unpacking, tarEntryName);
-
-            File destPath = new File(dest, tarEntry.getName());
-            String canonicalEntryPath = destPath.getCanonicalPath();
-            if (!canonicalEntryPath.equals(canonicalDestination)
-                    && !canonicalEntryPath.startsWith(canonicalDestinationPrefix)) {
-                throw new IOException("Runtime archive entry escapes its destination: " + tarEntryName);
-            }
-            net.kdt.pojavlaunch.utils.FileUtils.ensureParentDirectory(destPath);
-            if (tarEntry.isSymbolicLink()) {
-                try {
-                    File linkTarget = new File(destPath.getParentFile(), tarEntry.getLinkName());
-                    String canonicalLinkTarget = linkTarget.getCanonicalPath();
-                    if (!canonicalLinkTarget.equals(canonicalDestination)
-                            && !canonicalLinkTarget.startsWith(canonicalDestinationPrefix)) {
-                        throw new IOException("Runtime symbolic link escapes its destination: "
-                                + tarEntryName + " -> " + tarEntry.getLinkName());
-                    }
-                    if (destPath.exists() && !destPath.delete()) {
-                        throw new IOException("Failed to replace runtime symbolic link: " + tarEntryName);
-                    }
-                    Os.symlink(tarEntry.getLinkName(), destPath.getAbsolutePath());
-                } catch (Exception e) {
-                    throw new IOException("Failed to create runtime symbolic link " + tarEntryName
-                            + " -> " + tarEntry.getLinkName(), e);
+                File destPath = new File(dest, tarEntry.getName());
+                String canonicalEntryPath = destPath.getCanonicalPath();
+                if (!canonicalEntryPath.equals(canonicalDestination)
+                        && !canonicalEntryPath.startsWith(canonicalDestinationPrefix)) {
+                    throw new IOException("Runtime archive entry escapes its destination: " + tarEntryName);
                 }
+                net.kdt.pojavlaunch.utils.FileUtils.ensureParentDirectory(destPath);
+                if (tarEntry.isSymbolicLink()) {
+                    try {
+                        File linkTarget = new File(destPath.getParentFile(), tarEntry.getLinkName());
+                        String canonicalLinkTarget = linkTarget.getCanonicalPath();
+                        if (!canonicalLinkTarget.equals(canonicalDestination)
+                                && !canonicalLinkTarget.startsWith(canonicalDestinationPrefix)) {
+                            throw new IOException("Runtime symbolic link escapes its destination: "
+                                    + tarEntryName + " -> " + tarEntry.getLinkName());
+                        }
+                        if (destPath.exists() && !destPath.delete()) {
+                            throw new IOException("Failed to replace runtime symbolic link: " + tarEntryName);
+                        }
+                        Os.symlink(tarEntry.getLinkName(), destPath.getAbsolutePath());
+                    } catch (Exception e) {
+                        throw new IOException("Failed to create runtime symbolic link " + tarEntryName
+                                + " -> " + tarEntry.getLinkName(), e);
+                    }
 
-            } else if (tarEntry.isDirectory()) {
-                net.kdt.pojavlaunch.utils.FileUtils.ensureDirectory(destPath);
-            } else if (!destPath.exists() || destPath.length() != tarEntry.getSize()) {
-                FileOutputStream os = new FileOutputStream(destPath);
-                IOUtils.copyLarge(tarIn, os, buffer);
-                os.close();
+                } else if (tarEntry.isDirectory()) {
+                    net.kdt.pojavlaunch.utils.FileUtils.ensureDirectory(destPath);
+                } else if (!destPath.exists() || destPath.length() != tarEntry.getSize()) {
+                    try (FileOutputStream os = new FileOutputStream(destPath)) {
+                        IOUtils.copyLarge(tarIn, os, buffer);
+                    }
+                }
+                tarEntry = tarIn.getNextTarEntry();
             }
-            tarEntry = tarIn.getNextTarEntry();
         }
-        tarIn.close();
     }
 }

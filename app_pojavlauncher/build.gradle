@@ -194,27 +194,32 @@ android {
 
 afterEvaluate {
     // Explicit dependencies for which the apk relies on
-    tasks.mergeDebugAssets.dependsOn(":forge_installer:jar", ":arc_dns_injector:jar", ":jre_lwjgl3glfw:jar", "verifyBundledJre17")
+    tasks.mergeDebugAssets.dependsOn(":forge_installer:jar", ":arc_dns_injector:jar", ":jre_lwjgl3glfw:jar", "verifyBundledJavaRuntimes")
 }
 
-tasks.register("verifyBundledJre17") {
+tasks.register("verifyBundledJavaRuntimes") {
     group = "verification"
-    description = "Prevents producing an APK that cannot install its bundled Java 17 runtime."
+    description = "Prevents producing an APK without the inherited Java 8, 17, and 21 runtimes."
     doLast {
         if (project.hasProperty("allowMissingBundledRuntimes")) return
 
-        File runtimeDir = file("src/main/assets/components/jre-new")
-        List<String> requiredAssets = [
+        List<String> runtimeDirectories = ["jre", "jre-new", "jre-21"]
+        List<String> runtimeAssets = [
                 "version", "universal.tar.xz", "bin-arm.tar.xz", "bin-arm64.tar.xz",
                 "bin-x86.tar.xz", "bin-x86_64.tar.xz"
         ]
-        List<String> missingAssets = requiredAssets.findAll {
-            File asset = new File(runtimeDir, it)
-            !asset.isFile() || asset.length() == 0
+        List<String> missingAssets = []
+        runtimeDirectories.each { runtimeDirectory ->
+            runtimeAssets.each { runtimeAsset ->
+                File asset = file("src/main/assets/components/${runtimeDirectory}/${runtimeAsset}")
+                if (!asset.isFile() || asset.length() == 0) {
+                    missingAssets.add("${runtimeDirectory}/${runtimeAsset}")
+                }
+            }
         }
         if (!missingAssets.isEmpty()) {
-            throw new GradleException("Bundled JRE 17 is incomplete (${missingAssets.join(', ')}). " +
-                    "Run scripts\\prepare_jre17.ps1 before building. " +
+            throw new GradleException("Bundled Java runtimes are incomplete (${missingAssets.join(', ')}). " +
+                    "Run scripts/prepare_java_runtimes.ps1 before building. " +
                     "Use -PallowMissingBundledRuntimes only for an intentionally runtime-free APK.")
         }
     }
