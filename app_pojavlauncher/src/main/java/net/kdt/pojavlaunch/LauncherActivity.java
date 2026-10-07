@@ -53,6 +53,7 @@ import net.kdt.pojavlaunch.utils.DateUtils;
 import net.kdt.pojavlaunch.utils.NotificationUtils;
 import net.kdt.pojavlaunch.value.launcherprofiles.LauncherProfiles;
 import net.kdt.pojavlaunch.value.launcherprofiles.MinecraftProfile;
+import net.kdt.pojavlaunch.value.MinecraftAccount;
 
 import java.lang.ref.WeakReference;
 import java.text.ParseException;
@@ -122,7 +123,8 @@ public class LauncherActivity extends BaseActivity {
         }
 
         LauncherProfiles.load();
-        MinecraftProfile prof = LauncherProfiles.getCurrentProfile();
+        String launcherProfileKey = LauncherProfiles.getCurrentProfileKey();
+        MinecraftProfile prof = LauncherProfiles.getProfile(launcherProfileKey);
         if (prof == null || prof.lastVersionId == null || "Unknown".equals(prof.lastVersionId)){
             Toast.makeText(this, R.string.error_no_version, Toast.LENGTH_LONG).show();
             return false;
@@ -132,7 +134,8 @@ public class LauncherActivity extends BaseActivity {
             LauncherPreferences.DEFAULT_PREF.edit().putInt("allocation", prof.ramAllocation).commit();
         }
 
-        if(mAccountSpinner.getSelectedAccount() == null){
+        MinecraftAccount selectedAccount = mAccountSpinner.getSelectedAccount();
+        if(selectedAccount == null){
             Toast.makeText(this, R.string.no_saved_accounts, Toast.LENGTH_LONG).show();
             ExtraCore.setValue(ExtraConstants.SELECT_AUTH_METHOD, true);
             return false;
@@ -141,7 +144,7 @@ public class LauncherActivity extends BaseActivity {
         JMinecraftVersionList.Version mcVersion = AsyncMinecraftDownloader.getListedVersion(normalizedVersionId);
 
         // Do not load when is a modded version or older than minecraft 1.3 on demo account
-        if (mAccountSpinner.getSelectedAccount().isDemo()) {
+        if (selectedAccount.isDemo()) {
             boolean isOlderThan13 = true;
 
             if (mcVersion != null) {
@@ -156,12 +159,9 @@ public class LauncherActivity extends BaseActivity {
             }
         }
 
-        new MinecraftDownloader().start(
-                this,
-                mcVersion,
-                normalizedVersionId,
-                new ContextAwareDoneListener(this, normalizedVersionId)
-        );
+        new MinecraftDownloader().start(this, mcVersion, normalizedVersionId, launcherProfileKey,
+                new ContextAwareDoneListener(this, normalizedVersionId,
+                        launcherProfileKey, selectedAccount.username));
         return false;
     };
 

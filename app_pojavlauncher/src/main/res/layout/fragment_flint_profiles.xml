@@ -40,7 +40,8 @@
             android:background="@drawable/flint_button_background"
             android:fontFamily="@font/noto_sans_bold"
             android:minWidth="0dp"
-            android:paddingHorizontal="20dp"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
             android:text="@string/flint_profile_add"
             android:textAllCaps="false"
             android:textColor="@color/flint_home_play_text" />

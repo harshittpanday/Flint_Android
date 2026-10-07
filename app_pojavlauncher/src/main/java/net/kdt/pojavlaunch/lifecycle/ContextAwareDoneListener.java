@@ -1,5 +1,7 @@
 package net.kdt.pojavlaunch.lifecycle;
 
+import static net.kdt.pojavlaunch.MainActivity.INTENT_MINECRAFT_ACCOUNT;
+import static net.kdt.pojavlaunch.MainActivity.INTENT_MINECRAFT_PROFILE;
 import static net.kdt.pojavlaunch.MainActivity.INTENT_MINECRAFT_VERSION;
 
 import android.app.Activity;
@@ -20,16 +22,23 @@ public class ContextAwareDoneListener implements AsyncMinecraftDownloader.DoneLi
     private final String mErrorString;
     private final String mLocalAccountErrorString;
     private final String mNormalizedVersionid;
+    private final String mLauncherProfileKey;
+    private final String mAccountName;
 
-    public ContextAwareDoneListener(Context baseContext, String versionId) {
+    public ContextAwareDoneListener(Context baseContext, String versionId,
+                                    String launcherProfileKey, String accountName) {
         this.mErrorString = baseContext.getString(R.string.mc_download_failed);
         this.mLocalAccountErrorString = baseContext.getString(R.string.flint_local_missing_files);
         this.mNormalizedVersionid = versionId;
+        this.mLauncherProfileKey = launcherProfileKey;
+        this.mAccountName = accountName;
     }
 
     private Intent createGameStartIntent(Context context) {
         Intent mainIntent = new Intent(context, MainActivity.class);
         mainIntent.putExtra(INTENT_MINECRAFT_VERSION, mNormalizedVersionid);
+        mainIntent.putExtra(INTENT_MINECRAFT_PROFILE, mLauncherProfileKey);
+        mainIntent.putExtra(INTENT_MINECRAFT_ACCOUNT, mAccountName);
         mainIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         return mainIntent;
     }

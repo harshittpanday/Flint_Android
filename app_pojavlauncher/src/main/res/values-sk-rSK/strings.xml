@@ -73,7 +73,7 @@
     <string name="global_retry">Skúsiť znova</string>
     <string name="global_default">Predvolené</string>
     <!-- MainActivity: strings -->
-    <string name="mcn_exit_title">Hra spadla. Skontroluj latestlog.txt pre viac podrobností.</string>
+    <string name="mcn_exit_title">Hra sa skončila s kódom %1$d. Skontroluj latestlog.txt pre viac podrobností.</string>
     <string name="mcn_exit_confirm">Ste si istí, že chcete ukončiť hru?</string>
     <string name="mcn_check_fail_vulkan_support">Zink (Vulkan) vykresľovač nie je podporovaný na tomto zariadení!</string>
     <!-- MainActivity: Control buttons -->

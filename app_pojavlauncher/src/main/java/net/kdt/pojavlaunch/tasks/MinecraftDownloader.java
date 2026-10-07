@@ -24,6 +24,7 @@ import net.kdt.pojavlaunch.utils.FileUtils;
 import net.kdt.pojavlaunch.value.DependentLibrary;
 import net.kdt.pojavlaunch.value.MinecraftClientInfo;
 import net.kdt.pojavlaunch.value.MinecraftLibraryArtifact;
+import net.kdt.pojavlaunch.value.launcherprofiles.LauncherProfiles;
 
 import java.io.File;
 import java.io.IOException;
@@ -66,6 +67,13 @@ public class MinecraftDownloader {
     public void start(@Nullable Activity activity, @Nullable JMinecraftVersionList.Version version,
                       @NonNull String realVersion, // this was there for a reason
                       @NonNull AsyncMinecraftDownloader.DoneListener listener) {
+        String profileKey = activity == null ? null : LauncherProfiles.getCurrentProfileKey();
+        start(activity, version, realVersion, profileKey, listener);
+    }
+
+    public void start(@Nullable Activity activity, @Nullable JMinecraftVersionList.Version version,
+                      @NonNull String realVersion, @Nullable String profileKey,
+                      @NonNull AsyncMinecraftDownloader.DoneListener listener) {
         if(activity != null){
             isLocalProfile = Tools.isLocalProfile(activity);
             Tools.switchDemo(Tools.isDemoProfile(activity));
@@ -76,7 +84,7 @@ public class MinecraftDownloader {
 
         sExecutorService.execute(() -> {
             try {
-                downloadGame(activity, version, realVersion);
+                downloadGame(activity, version, realVersion, profileKey);
                 listener.onDownloadDone();
             }catch (Exception e) {
                 listener.onDownloadFailed(e);
@@ -92,7 +100,8 @@ public class MinecraftDownloader {
      * @param versionName The version ID (necessary)
      * @throws Exception when an exception occurs in the function body or in any of the downloading threads.
      */
-    private void downloadGame(Activity activity, JMinecraftVersionList.Version verInfo, String versionName) throws Exception {
+    private void downloadGame(Activity activity, JMinecraftVersionList.Version verInfo,
+                              String versionName, String profileKey) throws Exception {
         // Put up a dummy progress line, for the activity to start the service and do all the other necessary
         // work to keep the launcher alive. We will replace this line when we will start downloading stuff.
         ProgressLayout.setProgress(ProgressLayout.DOWNLOAD_MINECRAFT, 0, R.string.newdl_starting);
@@ -107,7 +116,7 @@ public class MinecraftDownloader {
         mDownloaderThreadException = new AtomicReference<>(null);
         mUseFileCounter = false;
 
-        if(!downloadAndProcessMetadata(activity, verInfo, versionName)) {
+        if(!downloadAndProcessMetadata(activity, verInfo, versionName, profileKey)) {
             throw new RuntimeException(activity.getString(R.string.exception_failed_to_unpack_jre17));
         }
 
@@ -248,7 +257,8 @@ public class MinecraftDownloader {
      * @return false if JRE17 installation failed, true otherwise
      * @throws IOException if the download of any of the metadata files fails
      */
-    private boolean downloadAndProcessMetadata(Activity activity, JMinecraftVersionList.Version verInfo, String versionName) throws IOException, MirrorTamperedException {
+    private boolean downloadAndProcessMetadata(Activity activity, JMinecraftVersionList.Version verInfo,
+                                               String versionName, String profileKey) throws IOException, MirrorTamperedException {
         File versionJsonFile;
         if(verInfo != null) versionJsonFile = downloadGameJson(verInfo);
         else versionJsonFile = createGameJsonPath(versionName);
@@ -258,7 +268,7 @@ public class MinecraftDownloader {
             throw new IOException("Unable to read Version JSON for version " + versionName);
         }
 
-        if(activity != null && !NewJREUtil.installNewJreIfNeeded(activity, verInfo)){
+        if(activity != null && !NewJREUtil.installNewJreIfNeeded(activity, verInfo, profileKey)){
             return false;
         }
 
@@ -276,7 +286,7 @@ public class MinecraftDownloader {
         if(Tools.isValidString(verInfo.inheritsFrom)) {
             JMinecraftVersionList.Version inheritedVersion = AsyncMinecraftDownloader.getListedVersion(verInfo.inheritsFrom);
             // Infinite inheritance !?! :noway:
-            return downloadAndProcessMetadata(activity, inheritedVersion, verInfo.inheritsFrom);
+            return downloadAndProcessMetadata(activity, inheritedVersion, verInfo.inheritsFrom, profileKey);
         }
         return true;
     }

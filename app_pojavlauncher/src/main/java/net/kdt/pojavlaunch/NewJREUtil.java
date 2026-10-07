@@ -67,7 +67,8 @@ public class NewJREUtil {
 
 
     /** @return true if everything is good, false otherwise.  */
-    public static boolean installNewJreIfNeeded(Activity activity, JMinecraftVersionList.Version versionInfo) {
+    public static boolean installNewJreIfNeeded(Activity activity, JMinecraftVersionList.Version versionInfo,
+                                                String profileKey) {
         //Now we have the reliable information to check if our runtime settings are good enough
         if (versionInfo.javaVersion == null || versionInfo.javaVersion.component.equalsIgnoreCase("jre-legacy"))
             return true;
@@ -76,7 +77,12 @@ public class NewJREUtil {
 
         LauncherProfiles.load();
         AssetManager assetManager = activity.getAssets();
-        MinecraftProfile minecraftProfile = LauncherProfiles.getCurrentProfile();
+        MinecraftProfile minecraftProfile = LauncherProfiles.getProfile(profileKey);
+        if (minecraftProfile == null) {
+            Tools.dialogOnUiThread(activity, activity.getString(R.string.global_error),
+                    activity.getString(R.string.flint_launch_profile_missing));
+            return false;
+        }
         String profileRuntime = Tools.getSelectedRuntime(minecraftProfile);
         Runtime runtime = MultiRTUtils.read(profileRuntime);
         // Partly trust the user with his own selection, if the game can even try to run in this case

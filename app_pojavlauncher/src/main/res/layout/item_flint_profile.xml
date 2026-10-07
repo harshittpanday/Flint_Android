@@ -6,7 +6,8 @@
     android:background="@drawable/flint_home_profile_selector"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:paddingHorizontal="14dp">
+    android:paddingStart="14dp"
+    android:paddingEnd="14dp">
 
     <ImageView
         android:id="@+id/flint_profile_icon"

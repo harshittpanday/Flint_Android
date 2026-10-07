@@ -3,6 +3,7 @@ package net.kdt.pojavlaunch.value.launcherprofiles;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import net.kdt.pojavlaunch.Tools;
 import net.kdt.pojavlaunch.prefs.LauncherPreferences;
@@ -11,9 +12,11 @@ import net.kdt.pojavlaunch.profiles.ProfileSelection;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -74,6 +77,12 @@ public class LauncherProfiles {
         return profile;
     }
 
+    public static @Nullable MinecraftProfile getProfile(String profileKey) {
+        LauncherProfiles.load();
+        if (profileKey == null) return null;
+        return mainProfileJson.profiles.get(profileKey);
+    }
+
     public static @NonNull String getCurrentProfileKey() {
         LauncherProfiles.load();
         String profileKey = repairSelectedProfile();
@@ -103,12 +112,19 @@ public class LauncherProfiles {
     public static List<String> getSortedProfileKeys() {
         load();
         List<String> keys = new ArrayList<>(mainProfileJson.profiles.keySet());
-        keys.sort(Comparator
-                .comparing((String key) -> {
-                    MinecraftProfile profile = mainProfileJson.profiles.get(key);
-                    return profile == null || profile.name == null ? "" : profile.name.toLowerCase();
-                })
-                .thenComparing(key -> key));
+        Collections.sort(keys, new Comparator<String>() {
+            @Override
+            public int compare(String firstKey, String secondKey) {
+                MinecraftProfile firstProfile = mainProfileJson.profiles.get(firstKey);
+                MinecraftProfile secondProfile = mainProfileJson.profiles.get(secondKey);
+                String firstName = firstProfile == null || firstProfile.name == null
+                        ? "" : firstProfile.name.toLowerCase(Locale.ROOT);
+                String secondName = secondProfile == null || secondProfile.name == null
+                        ? "" : secondProfile.name.toLowerCase(Locale.ROOT);
+                int nameComparison = firstName.compareTo(secondName);
+                return nameComparison != 0 ? nameComparison : firstKey.compareTo(secondKey);
+            }
+        });
         return keys;
     }
 

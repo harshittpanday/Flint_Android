@@ -92,7 +92,7 @@
     <string name="global_default">Default</string>
 
     <!-- MainActivity: strings -->
-    <string name="mcn_exit_title">Application/Game exited with code %d, check latestlog.txt for more details.</string>
+    <string name="mcn_exit_title">Minecraft exited with code %1$d. Check latestlog.txt for more details.</string>
     <string name="mcn_signal_title">Application/Game aborted by fatal signal %d, check latestlog.txt for more details.</string>
     <string name="mcn_exit_confirm">Are you sure want to force close?</string>
     <string name="mcn_check_fail_vulkan_support">Zink (Vulkan) renderer is not supported on this device!</string>
@@ -202,6 +202,7 @@
     <string name="flint_local_missing_files">This local account can launch only when all required game files are already installed and verified. A required file is missing or changed. Sign in with an entitled Microsoft account to download it, or restore a legitimate local installation.</string>
     <string name="flint_profile_memory">Profile memory (MB)</string>
     <string name="flint_profile_memory_hint">Use global memory setting</string>
+    <string name="flint_launch_profile_missing">The selected Flint profile or account is no longer available. Return to the launcher and select it again.</string>
     <string name="flint_about_category">About Flint Android</string>
     <string name="flint_upstream_credit_title">PojavLauncher attribution</string>
     <string name="flint_upstream_credit_summary">Flint Android is derived from PojavLauncher and builds on its Android Minecraft: Java Edition platform work. Original copyrights and licenses remain with their respective authors.</string>

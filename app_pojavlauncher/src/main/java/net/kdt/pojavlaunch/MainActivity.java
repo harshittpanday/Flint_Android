@@ -75,6 +75,8 @@ import java.io.IOException;
 public class MainActivity extends BaseActivity implements ControlButtonMenuListener, EditorExitable, ServiceConnection {
     public static volatile ClipboardManager GLOBAL_CLIPBOARD;
     public static final String INTENT_MINECRAFT_VERSION = "intent_version";
+    public static final String INTENT_MINECRAFT_PROFILE = "intent_launcher_profile";
+    public static final String INTENT_MINECRAFT_ACCOUNT = "intent_account";
 
     volatile public static boolean isInputStackCall;
 
@@ -90,6 +92,7 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
     private HotbarView mHotbarView;
 
     MinecraftProfile minecraftProfile;
+    MinecraftAccount minecraftAccount;
 
     private ArrayAdapter<String> gameActionArrayAdapter;
     private AdapterView.OnItemClickListener gameActionClickListener;
@@ -102,7 +105,17 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        minecraftProfile = LauncherProfiles.getCurrentProfile();
+        String launcherProfileKey = getIntent().getStringExtra(INTENT_MINECRAFT_PROFILE);
+        minecraftProfile = launcherProfileKey == null
+                ? LauncherProfiles.getCurrentProfile()
+                : LauncherProfiles.getProfile(launcherProfileKey);
+        String accountName = getIntent().getStringExtra(INTENT_MINECRAFT_ACCOUNT);
+        minecraftAccount = PojavProfile.getCurrentProfileContent(this, accountName);
+        if (minecraftProfile == null || minecraftAccount == null) {
+            Toast.makeText(this, R.string.flint_launch_profile_missing, Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
         MCOptionUtils.load(Tools.getGameDirPath(minecraftProfile).getAbsolutePath());
 
         Intent gameServiceIntent = new Intent(this, GameService.class);
@@ -359,7 +372,6 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
             Tools.LOCAL_RENDERER = firstCompatibleRenderer;
             Tools.releaseRenderersCache();
         }
-        MinecraftAccount minecraftAccount = PojavProfile.getCurrentProfileContent(this, null);
         Logger.appendToLog("--------- Starting game with Launcher Debug!");
         Tools.printLauncherInfo(versionId, Tools.isValidString(minecraftProfile.javaArgs) ? minecraftProfile.javaArgs : LauncherPreferences.PREF_CUSTOM_JAVA_ARGS);
         JREUtils.redirectAndPrintJRELog();
