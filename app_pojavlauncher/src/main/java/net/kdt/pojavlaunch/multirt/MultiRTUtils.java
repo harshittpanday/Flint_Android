@@ -9,6 +9,7 @@ import android.util.Log;
 import com.kdt.mcgui.ProgressLayout;
 
 import net.kdt.pojavlaunch.R;
+import net.kdt.pojavlaunch.Architecture;
 import net.kdt.pojavlaunch.Tools;
 import net.kdt.pojavlaunch.utils.MathUtils;
 
@@ -44,6 +45,7 @@ public class MultiRTUtils {
         ArrayList<Runtime> runtimes = new ArrayList<>();
         File[] files = RUNTIME_FOLDER.listFiles();
         if(files != null) for(File f : files) {
+            if (f.getName().endsWith(".installing") || f.getName().endsWith(".backup")) continue;
             runtimes.add(read(f.getName()));
         }
         else throw new RuntimeException("The runtime directory does not exist");
@@ -110,6 +112,48 @@ public class MultiRTUtils {
         ProgressLayout.clearProgress(ProgressLayout.UNPACK_RUNTIME);
 
         forceReread(name);
+    }
+
+    public static boolean isRuntimeValid(String name, int expectedJavaVersion, int expectedArchitecture) {
+        File dest = new File(RUNTIME_FOLDER, name);
+        File javaBinary = new File(dest, "bin/java");
+        File jvmConfig = new File(dest, "lib/jvm.cfg");
+        Runtime runtime = forceReread(name);
+        return dest.isDirectory()
+                && javaBinary.isFile() && javaBinary.length() > 0
+                && jvmConfig.isFile() && jvmConfig.length() > 0
+                && runtime.versionString != null
+                && runtime.javaVersion == expectedJavaVersion
+                && Architecture.archAsInt(runtime.arch) == expectedArchitecture;
+    }
+
+    /** Replace a runtime only after its staged installation has been fully prepared and validated. */
+    public static void replaceRuntimeNamed(String stagedName, String installedName) throws IOException {
+        File staged = new File(RUNTIME_FOLDER, stagedName);
+        File installed = new File(RUNTIME_FOLDER, installedName);
+        File backup = new File(RUNTIME_FOLDER, installedName + ".backup");
+        if (!staged.isDirectory()) throw new IOException("Staged runtime is missing: " + staged.getAbsolutePath());
+        if (backup.exists()) FileUtils.deleteDirectory(backup);
+
+        boolean hadInstalledRuntime = installed.exists();
+        if (hadInstalledRuntime && !installed.renameTo(backup)) {
+            throw new IOException("Failed to preserve the existing runtime before replacement");
+        }
+        if (!staged.renameTo(installed)) {
+            if (hadInstalledRuntime && !backup.renameTo(installed)) {
+                throw new IOException("Failed to activate the new runtime and restore the previous runtime");
+            }
+            throw new IOException("Failed to activate the staged runtime");
+        }
+        if (backup.exists()) {
+            try {
+                FileUtils.deleteDirectory(backup);
+            } catch (IOException cleanupError) {
+                Log.w("MultiRT", "The previous runtime backup could not be removed", cleanupError);
+            }
+        }
+        sCache.remove(stagedName);
+        sCache.remove(installedName);
     }
 
 
@@ -202,12 +246,11 @@ public class MultiRTUtils {
 
     @SuppressWarnings("SameParameterValue")
     private static void copyDummyNativeLib(String name, File dest, String libFolder) throws IOException {
-        File fileLib = new File(dest, "/"+libFolder + "/" + name);
-        FileInputStream is = new FileInputStream(new File(NATIVE_LIB_DIR, name));
-        FileOutputStream os = new FileOutputStream(fileLib);
-        IOUtils.copy(is, os);
-        is.close();
-        os.close();
+        File fileLib = new File(dest, libFolder + "/" + name);
+        try (FileInputStream is = new FileInputStream(new File(NATIVE_LIB_DIR, name));
+             FileOutputStream os = new FileOutputStream(fileLib)) {
+            IOUtils.copy(is, os);
+        }
     }
 
     private static void installRuntimeNamedNoRemove(InputStream runtimeInputStream, File dest) throws IOException {
@@ -217,6 +260,8 @@ public class MultiRTUtils {
 
     private static void uncompressTarXZ(final InputStream tarFileInputStream, final File dest) throws IOException {
         net.kdt.pojavlaunch.utils.FileUtils.ensureDirectory(dest);
+        final String canonicalDestination = dest.getCanonicalPath();
+        final String canonicalDestinationPrefix = canonicalDestination + File.separator;
 
         byte[] buffer = new byte[8192];
         TarArchiveInputStream tarIn = new TarArchiveInputStream(
@@ -231,14 +276,28 @@ public class MultiRTUtils {
             ProgressLayout.setProgress(ProgressLayout.UNPACK_RUNTIME, 100, R.string.global_unpacking, tarEntryName);
 
             File destPath = new File(dest, tarEntry.getName());
+            String canonicalEntryPath = destPath.getCanonicalPath();
+            if (!canonicalEntryPath.equals(canonicalDestination)
+                    && !canonicalEntryPath.startsWith(canonicalDestinationPrefix)) {
+                throw new IOException("Runtime archive entry escapes its destination: " + tarEntryName);
+            }
             net.kdt.pojavlaunch.utils.FileUtils.ensureParentDirectory(destPath);
             if (tarEntry.isSymbolicLink()) {
                 try {
-                    // android.system.Os
-                    // Libcore one support all Android versions
-                    Os.symlink(tarEntry.getName(), tarEntry.getLinkName());
-                } catch (Throwable e) {
-                    Log.e("MultiRT", e.toString());
+                    File linkTarget = new File(destPath.getParentFile(), tarEntry.getLinkName());
+                    String canonicalLinkTarget = linkTarget.getCanonicalPath();
+                    if (!canonicalLinkTarget.equals(canonicalDestination)
+                            && !canonicalLinkTarget.startsWith(canonicalDestinationPrefix)) {
+                        throw new IOException("Runtime symbolic link escapes its destination: "
+                                + tarEntryName + " -> " + tarEntry.getLinkName());
+                    }
+                    if (destPath.exists() && !destPath.delete()) {
+                        throw new IOException("Failed to replace runtime symbolic link: " + tarEntryName);
+                    }
+                    Os.symlink(tarEntry.getLinkName(), destPath.getAbsolutePath());
+                } catch (Exception e) {
+                    throw new IOException("Failed to create runtime symbolic link " + tarEntryName
+                            + " -> " + tarEntry.getLinkName(), e);
                 }
 
             } else if (tarEntry.isDirectory()) {

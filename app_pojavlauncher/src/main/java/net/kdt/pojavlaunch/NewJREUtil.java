@@ -17,34 +17,58 @@ import java.util.Arrays;
 import java.util.List;
 
 public class NewJREUtil {
-    private static boolean checkInternalRuntime(AssetManager assetManager, InternalRuntime internalRuntime) {
+    private static boolean checkInternalRuntime(AssetManager assetManager, InternalRuntime internalRuntime)
+            throws RuntimeInstallationException {
         String launcher_runtime_version;
         String installed_runtime_version = MultiRTUtils.readInternalRuntimeVersion(internalRuntime.name);
+        boolean installedRuntimeValid = MultiRTUtils.isRuntimeValid(internalRuntime.name,
+                internalRuntime.majorVersion, Tools.DEVICE_ARCHITECTURE);
         try {
             launcher_runtime_version = Tools.read(assetManager.open(internalRuntime.path+"/version"));
         }catch (IOException exc) {
-            //we don't have a runtime included!
-            //if we have one installed -> return true -> proceed (no updates but the current one should be functional)
-            //if we don't -> return false -> Cannot find compatible Java runtime
-            return installed_runtime_version != null;
+            if (installedRuntimeValid) return true;
+            throw new RuntimeInstallationException("Java " + internalRuntime.majorVersion
+                    + " is not bundled in this APK (missing " + internalRuntime.path
+                    + "/version) and no valid installed copy is available.", exc);
         }
-        // this implicitly checks for null, so it will unpack the runtime even if we don't have one installed
-        if(!launcher_runtime_version.equals(installed_runtime_version))
+        if(!launcher_runtime_version.equals(installed_runtime_version) || !installedRuntimeValid)
             return unpackInternalRuntime(assetManager, internalRuntime, launcher_runtime_version);
-        else return true;
+        return true;
     }
 
-    private static boolean unpackInternalRuntime(AssetManager assetManager, InternalRuntime internalRuntime, String version) {
+    private static boolean unpackInternalRuntime(AssetManager assetManager, InternalRuntime internalRuntime, String version)
+            throws RuntimeInstallationException {
+        String architecture = archAsString(Tools.DEVICE_ARCHITECTURE);
+        if (Tools.DEVICE_ARCHITECTURE == Architecture.UNSUPPORTED_ARCH) {
+            throw new RuntimeInstallationException("Java " + internalRuntime.majorVersion
+                    + " cannot be installed on unsupported CPU architecture: " + architecture);
+        }
+        String stagedRuntimeName = internalRuntime.name + ".installing";
         try {
+            MultiRTUtils.removeRuntimeNamed(stagedRuntimeName);
             MultiRTUtils.installRuntimeNamedBinpack(
                     assetManager.open(internalRuntime.path+"/universal.tar.xz"),
-                    assetManager.open(internalRuntime.path+"/bin-" + archAsString(Tools.DEVICE_ARCHITECTURE) + ".tar.xz"),
-                    internalRuntime.name, version);
-            MultiRTUtils.postPrepare(internalRuntime.name);
+                    assetManager.open(internalRuntime.path+"/bin-" + architecture + ".tar.xz"),
+                    stagedRuntimeName, version);
+            MultiRTUtils.postPrepare(stagedRuntimeName);
+            if (!MultiRTUtils.isRuntimeValid(stagedRuntimeName, internalRuntime.majorVersion,
+                    Tools.DEVICE_ARCHITECTURE)) {
+                throw new IOException("extracted runtime failed release, binary, or architecture validation");
+            }
+            MultiRTUtils.replaceRuntimeNamed(stagedRuntimeName, internalRuntime.name);
             return true;
         }catch (IOException e) {
-            Log.e("NewJREAuto", "Internal JRE unpack failed", e);
-            return false;
+            try {
+                MultiRTUtils.removeRuntimeNamed(stagedRuntimeName);
+            } catch (IOException cleanupError) {
+                e.addSuppressed(cleanupError);
+            }
+            String runtimeRoot = new java.io.File(Tools.MULTIRT_HOME).getAbsolutePath();
+            RuntimeInstallationException failure = new RuntimeInstallationException(
+                    "Failed to install Java " + internalRuntime.majorVersion + " for " + architecture
+                            + " in " + runtimeRoot + ": " + e.getMessage(), e);
+            Log.e("NewJREAuto", failure.getMessage(), failure);
+            throw failure;
         }
     }
 
@@ -68,7 +92,7 @@ public class NewJREUtil {
 
     /** @return true if everything is good, false otherwise.  */
     public static boolean installNewJreIfNeeded(Activity activity, JMinecraftVersionList.Version versionInfo,
-                                                String profileKey) {
+                                                String profileKey) throws RuntimeInstallationException {
         //Now we have the reliable information to check if our runtime settings are good enough
         if (versionInfo.javaVersion == null || versionInfo.javaVersion.component.equalsIgnoreCase("jre-legacy"))
             return true;

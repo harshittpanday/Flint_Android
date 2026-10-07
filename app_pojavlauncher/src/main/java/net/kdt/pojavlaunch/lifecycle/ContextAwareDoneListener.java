@@ -10,6 +10,7 @@ import android.content.Intent;
 
 import net.kdt.pojavlaunch.MainActivity;
 import net.kdt.pojavlaunch.R;
+import net.kdt.pojavlaunch.RuntimeInstallationException;
 import net.kdt.pojavlaunch.Tools;
 import net.kdt.pojavlaunch.lifecycle.ContextExecutor;
 import net.kdt.pojavlaunch.lifecycle.ContextExecutorTask;
@@ -50,8 +51,15 @@ public class ContextAwareDoneListener implements AsyncMinecraftDownloader.DoneLi
 
     @Override
     public void onDownloadFailed(Throwable throwable) {
-        Tools.showErrorRemote(throwable instanceof LocalAccountMissingFilesException
-                ? mLocalAccountErrorString : mErrorString, throwable);
+        String errorMessage;
+        if (throwable instanceof LocalAccountMissingFilesException) {
+            errorMessage = mLocalAccountErrorString;
+        } else if (throwable instanceof RuntimeInstallationException) {
+            errorMessage = throwable.getMessage();
+        } else {
+            errorMessage = mErrorString;
+        }
+        Tools.showErrorRemote(errorMessage, throwable);
     }
 
     @Override

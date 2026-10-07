@@ -194,7 +194,30 @@ android {
 
 afterEvaluate {
     // Explicit dependencies for which the apk relies on
-    tasks.mergeDebugAssets.dependsOn(":forge_installer:jar", ":arc_dns_injector:jar", ":jre_lwjgl3glfw:jar")
+    tasks.mergeDebugAssets.dependsOn(":forge_installer:jar", ":arc_dns_injector:jar", ":jre_lwjgl3glfw:jar", "verifyBundledJre17")
+}
+
+tasks.register("verifyBundledJre17") {
+    group = "verification"
+    description = "Prevents producing an APK that cannot install its bundled Java 17 runtime."
+    doLast {
+        if (project.hasProperty("allowMissingBundledRuntimes")) return
+
+        File runtimeDir = file("src/main/assets/components/jre-new")
+        List<String> requiredAssets = [
+                "version", "universal.tar.xz", "bin-arm.tar.xz", "bin-arm64.tar.xz",
+                "bin-x86.tar.xz", "bin-x86_64.tar.xz"
+        ]
+        List<String> missingAssets = requiredAssets.findAll {
+            File asset = new File(runtimeDir, it)
+            !asset.isFile() || asset.length() == 0
+        }
+        if (!missingAssets.isEmpty()) {
+            throw new GradleException("Bundled JRE 17 is incomplete (${missingAssets.join(', ')}). " +
+                    "Run scripts\\prepare_jre17.ps1 before building. " +
+                    "Use -PallowMissingBundledRuntimes only for an intentionally runtime-free APK.")
+        }
+    }
 }
 
 dependencies {
