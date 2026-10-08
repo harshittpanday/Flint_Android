@@ -60,6 +60,7 @@ import java.text.ParseException;
 
 public class LauncherActivity extends BaseActivity {
     public static final String SETTING_FRAGMENT_TAG = "SETTINGS_FRAGMENT";
+    public static final String EXTRA_OPEN_MICROSOFT_LOGIN = "openMicrosoftLogin";
 
     public final ActivityResultLauncher<Object> modInstallerLauncher =
             registerForActivityResult(new OpenDocumentWithExtension("jar"), (data)->{
@@ -252,6 +253,11 @@ public class LauncherActivity extends BaseActivity {
         mProgressLayout.observe(ProgressLayout.INSTALL_MODPACK);
         mProgressLayout.observe(ProgressLayout.AUTHENTICATE_MICROSOFT);
         mProgressLayout.observe(ProgressLayout.DOWNLOAD_VERSION_LIST);
+
+        if (getIntent().getBooleanExtra(EXTRA_OPEN_MICROSOFT_LOGIN, false)) {
+            getIntent().removeExtra(EXTRA_OPEN_MICROSOFT_LOGIN);
+            Tools.swapFragment(this, MicrosoftLoginFragment.class, MicrosoftLoginFragment.TAG, null);
+        }
     }
 
     @Override

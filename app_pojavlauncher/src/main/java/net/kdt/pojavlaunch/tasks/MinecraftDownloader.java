@@ -114,14 +114,18 @@ public class MinecraftDownloader {
         mProcessedSizeCounter = new AtomicLong(0);
         mInternetUsageCounter = new AtomicLong(0);
         mDownloaderThreadException = new AtomicReference<>(null);
-        mUseFileCounter = false;
+        // A local account performs a deterministic file preflight and must not contact download
+        // servers merely to calculate progress totals.
+        mUseFileCounter = isLocalProfile;
 
         if(!downloadAndProcessMetadata(activity, verInfo, versionName, profileKey)) {
             throw new RuntimeException(activity.getString(R.string.exception_failed_to_unpack_jre17));
         }
 
+        if (isLocalProfile) verifyLocalInstallation();
+
         ArrayBlockingQueue<Runnable> taskQueue =
-                new ArrayBlockingQueue<>(mScheduledDownloadTasks.size(), false);
+                new ArrayBlockingQueue<>(Math.max(1, mScheduledDownloadTasks.size()), false);
         ThreadPoolExecutor downloaderPool =
                 new ThreadPoolExecutor(4, 4, 500, TimeUnit.MILLISECONDS, taskQueue);
 
@@ -211,6 +215,11 @@ public class MinecraftDownloader {
 
     private File downloadGameJson(JMinecraftVersionList.Version verInfo) throws IOException, MirrorTamperedException {
         File targetFile = createGameJsonPath(verInfo.id);
+        if (isLocalProfile) {
+            verifyLocalFile(targetFile, verInfo.sha1,
+                    LocalAccountMissingFilesException.Requirement.VERSION_METADATA);
+            return targetFile;
+        }
         if(verInfo.sha1 == null && targetFile.canRead() && targetFile.isFile())
             return targetFile;
         FileUtils.ensureParentDirectory(targetFile);
@@ -232,6 +241,11 @@ public class MinecraftDownloader {
         JMinecraftVersionList.AssetIndex assetIndex = verInfo.assetIndex;
         if(assetIndex == null || verInfo.assets == null) return null;
         File targetFile = new File(Tools.ASSETS_PATH, "indexes"+ File.separator + verInfo.assets + ".json");
+        if (isLocalProfile) {
+            verifyLocalFile(targetFile, assetIndex.sha1,
+                    LocalAccountMissingFilesException.Requirement.ASSET_INDEX);
+            return Tools.GLOBAL_GSON.fromJson(Tools.read(targetFile), JAssets.class);
+        }
         FileUtils.ensureParentDirectory(targetFile);
         DownloadUtils.ensureSha1(targetFile, assetIndex.sha1, ()-> {
             ProgressLayout.setProgress(ProgressLayout.DOWNLOAD_MINECRAFT, 0,
@@ -261,7 +275,11 @@ public class MinecraftDownloader {
                                                String versionName, String profileKey) throws IOException, MirrorTamperedException {
         File versionJsonFile;
         if(verInfo != null) versionJsonFile = downloadGameJson(verInfo);
-        else versionJsonFile = createGameJsonPath(versionName);
+        else {
+            versionJsonFile = createGameJsonPath(versionName);
+            if (isLocalProfile) verifyLocalFile(versionJsonFile, null,
+                    LocalAccountMissingFilesException.Requirement.VERSION_METADATA);
+        }
         if(versionJsonFile.canRead())  {
             verInfo = Tools.GLOBAL_GSON.fromJson(Tools.read(versionJsonFile), JMinecraftVersionList.Version.class);
         } else {
@@ -296,7 +314,8 @@ public class MinecraftDownloader {
     }
 
     private void scheduleDownload(File targetFile, int downloadClass, String url, String sha1,
-                                  long size, boolean skipIfFailed) throws IOException {
+                                  long size, boolean skipIfFailed,
+                                  LocalAccountMissingFilesException.Requirement requirement) throws IOException {
         FileUtils.ensureParentDirectory(targetFile);
         mTotalFileCount++;
         // Only attempt to check size if we still use the size counter and didn't switch to file counter.
@@ -313,7 +332,7 @@ public class MinecraftDownloader {
             mTotalSize += size;
         }
         mScheduledDownloadTasks.add(
-                new DownloaderTask(targetFile, downloadClass, url, sha1, size, skipIfFailed)
+                new DownloaderTask(targetFile, downloadClass, url, sha1, size, skipIfFailed, requirement)
         );
     }
 
@@ -329,7 +348,8 @@ public class MinecraftDownloader {
         String downloadUrl = baseRepository + path;
         File targetPath = new File(Tools.DIR_HOME_LIBRARY, path);
         mDeclaredNatives.add(targetPath);
-        scheduleDownload(targetPath, DownloadMirror.DOWNLOAD_CLASS_LIBRARIES, downloadUrl, null, 0, true);
+        scheduleDownload(targetPath, DownloadMirror.DOWNLOAD_CLASS_LIBRARIES, downloadUrl, null, 0, true,
+                LocalAccountMissingFilesException.Requirement.LIBRARY);
     }
 
     private void scheduleLibraryDownloads(DependentLibrary[] dependentLibraries) throws IOException {
@@ -365,10 +385,11 @@ public class MinecraftDownloader {
                         : dependentLibrary.url.replace("http://","https://")) + libArtifactPath;
                 skipIfFailed = true;
             }
-            if(!LauncherPreferences.PREF_CHECK_LIBRARY_SHA) sha1 = null;
+            if(!isLocalProfile && !LauncherPreferences.PREF_CHECK_LIBRARY_SHA) sha1 = null;
             scheduleDownload(new File(Tools.DIR_HOME_LIBRARY, libArtifactPath),
                     DownloadMirror.DOWNLOAD_CLASS_LIBRARIES,
-                    url, sha1, size, skipIfFailed
+                    url, sha1, size, skipIfFailed,
+                    LocalAccountMissingFilesException.Requirement.LIBRARY
             );
         }
     }
@@ -389,13 +410,14 @@ public class MinecraftDownloader {
             } else {
                 targetFile = new File(basePath, "objects" + File.separator + hashedPath);
             }
-            String sha1 = LauncherPreferences.PREF_CHECK_LIBRARY_SHA ? assetInfo.hash : null;
+            String sha1 = isLocalProfile || LauncherPreferences.PREF_CHECK_LIBRARY_SHA ? assetInfo.hash : null;
             scheduleDownload(targetFile,
                     DownloadMirror.DOWNLOAD_CLASS_ASSETS,
                     MINECRAFT_RES + hashedPath,
                     sha1,
                     assetInfo.size,
-                    false);
+                    false,
+                    LocalAccountMissingFilesException.Requirement.ASSET);
         }
     }
 
@@ -411,12 +433,13 @@ public class MinecraftDownloader {
                 loggingFileProperties.url,
                 loggingFileProperties.sha1,
                 loggingFileProperties.size,
-                false);
+                false,
+                LocalAccountMissingFilesException.Requirement.LOGGING_CONFIG);
     }
 
     private void scheduleGameJarDownload(MinecraftClientInfo minecraftClientInfo, String versionName) throws IOException {
         File clientJar = createGameJarPath(versionName);
-        String clientSha1 = LauncherPreferences.PREF_CHECK_LIBRARY_SHA ?
+        String clientSha1 = isLocalProfile || LauncherPreferences.PREF_CHECK_LIBRARY_SHA ?
                 minecraftClientInfo.sha1 : null;
         growDownloadList(1);
         scheduleDownload(clientJar,
@@ -424,7 +447,8 @@ public class MinecraftDownloader {
                 minecraftClientInfo.url,
                 clientSha1,
                 minecraftClientInfo.size,
-                false
+                false,
+                LocalAccountMissingFilesException.Requirement.CLIENT
         );
         // Store the path of the JAR to copy it into our new version folder later.
         mSourceJarFile = clientJar;
@@ -438,23 +462,40 @@ public class MinecraftDownloader {
         return tlb;
     }
 
+    private void verifyLocalInstallation() throws IOException {
+        for (DownloaderTask task : mScheduledDownloadTasks) task.verifyLocalFile();
+    }
+
+    private static void verifyLocalFile(File file, String expectedSha1,
+                                        LocalAccountMissingFilesException.Requirement requirement)
+            throws IOException {
+        MinecraftInstallationPreflight.Failure failure =
+                MinecraftInstallationPreflight.verify(file, expectedSha1);
+        if (failure != null) {
+            throw new LocalAccountMissingFilesException(requirement, failure, file.getAbsolutePath());
+        }
+    }
+
     private final class DownloaderTask implements Runnable, Tools.DownloaderFeedback {
         private final File mTargetPath;
         private final String mTargetUrl;
         private String mTargetSha1;
         private final int mDownloadClass;
         private final boolean mSkipIfFailed;
+        private final LocalAccountMissingFilesException.Requirement mRequirement;
         private int mLastCurr;
         private final long mDownloadSize;
 
         DownloaderTask(File targetPath, int downloadClass, String targetUrl, String targetSha1,
-                       long downloadSize, boolean skipIfFailed) {
+                       long downloadSize, boolean skipIfFailed,
+                       LocalAccountMissingFilesException.Requirement requirement) {
             this.mTargetPath = targetPath;
             this.mTargetUrl = targetUrl;
             this.mTargetSha1 = targetSha1;
             this.mDownloadClass = downloadClass;
             this.mDownloadSize = downloadSize;
             this.mSkipIfFailed = skipIfFailed;
+            this.mRequirement = requirement;
         }
 
         private String downloadSha1() throws IOException {
@@ -501,6 +542,11 @@ public class MinecraftDownloader {
         }
 
         private void runCatching() throws Exception {
+            if (isLocalProfile) {
+                verifyLocalFile();
+                finishWithoutDownloading();
+                return;
+            }
             if(mDownloadClass == DownloadMirror.DOWNLOAD_CLASS_LIBRARIES && !Tools.isValidString(mTargetSha1)) {
                 // If we're downloading a library, try to get sha1 since it might be available as a file
                 tryGetLibrarySha1();
@@ -514,6 +560,10 @@ public class MinecraftDownloader {
                 else downloadFile();
             }
         }
+
+        private void verifyLocalFile() throws IOException {
+            MinecraftDownloader.verifyLocalFile(mTargetPath, mTargetSha1, mRequirement);
+        }
         
         private void verifyFileSha1() throws Exception {
             if(mTargetPath.isFile() && mTargetPath.canRead() && Tools.compareSHA1(mTargetPath, mTargetSha1)) {
@@ -526,10 +576,6 @@ public class MinecraftDownloader {
         }
         
         private void downloadFile() throws Exception {
-            if(isLocalProfile){
-                throw new LocalAccountMissingFilesException(mTargetPath.getName());
-            }
-
             try {
                 DownloadUtils.ensureSha1(mTargetPath, mTargetSha1, () -> {
                     DownloadMirror.downloadFileMirrored(mDownloadClass, mTargetUrl, mTargetPath,

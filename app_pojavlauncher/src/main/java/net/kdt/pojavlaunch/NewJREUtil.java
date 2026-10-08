@@ -68,7 +68,12 @@ public class NewJREUtil {
     }
 
     private static MathUtils.RankedValue<Runtime> getNearestInstalledRuntime(int targetVersion) {
-        List<Runtime> runtimes = MultiRTUtils.getRuntimes();
+        List<Runtime> runtimes = new java.util.ArrayList<>();
+        for (Runtime runtime : MultiRTUtils.getRuntimes()) {
+            if (MultiRTUtils.isRuntimeUsable(runtime.name, targetVersion, Tools.DEVICE_ARCHITECTURE)) {
+                runtimes.add(runtime);
+            }
+        }
         return MathUtils.findNearestPositive(targetVersion, runtimes, (runtime)->runtime.javaVersion);
     }
 
@@ -82,10 +87,9 @@ public class NewJREUtil {
     public static boolean installNewJreIfNeeded(Activity activity, JMinecraftVersionList.Version versionInfo,
                                                 String profileKey) throws RuntimeInstallationException {
         //Now we have the reliable information to check if our runtime settings are good enough
-        if (versionInfo.javaVersion == null || versionInfo.javaVersion.component.equalsIgnoreCase("jre-legacy"))
-            return true;
-
-        int gameRequiredVersion = versionInfo.javaVersion.majorVersion;
+        int gameRequiredVersion = versionInfo.javaVersion == null
+                || "jre-legacy".equalsIgnoreCase(versionInfo.javaVersion.component)
+                ? 8 : versionInfo.javaVersion.majorVersion;
 
         LauncherProfiles.load();
         AssetManager assetManager = activity.getAssets();
@@ -106,7 +110,8 @@ public class NewJREUtil {
                 // Not calling showRuntimeFail on failure here because we did, technically, find the compatible runtime
                 return checkInternalRuntime(assetManager, internalRuntime);
             }
-            return true;
+            if (MultiRTUtils.isRuntimeUsable(runtime.name, gameRequiredVersion,
+                    Tools.DEVICE_ARCHITECTURE)) return true;
         }
 
         // If the runtime version selected by the user is not appropriate for this version (which means the game won't run at all)
@@ -160,6 +165,7 @@ public class NewJREUtil {
     }
 
     private enum InternalRuntime {
+        JRE_8(8, "Internal", "components/jre"),
         JRE_17(17, "Internal-17", "components/jre-new"),
         JRE_21(21, "Internal-21", "components/jre-21");
         public final int majorVersion;

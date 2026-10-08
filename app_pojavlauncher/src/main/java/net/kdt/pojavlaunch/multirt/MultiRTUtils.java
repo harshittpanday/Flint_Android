@@ -141,6 +141,16 @@ public class MultiRTUtils {
     }
 
     public static boolean isRuntimeValid(String name, int expectedJavaVersion, int expectedArchitecture) {
+        Runtime runtime = readUsableRuntime(name, expectedJavaVersion, expectedArchitecture);
+        return runtime != null && runtime.javaVersion == expectedJavaVersion;
+    }
+
+    /** Validate that a runtime can actually be launched and meets a game's minimum Java version. */
+    public static boolean isRuntimeUsable(String name, int minimumJavaVersion, int expectedArchitecture) {
+        return readUsableRuntime(name, minimumJavaVersion, expectedArchitecture) != null;
+    }
+
+    private static Runtime readUsableRuntime(String name, int minimumJavaVersion, int expectedArchitecture) {
         File dest = new File(RUNTIME_FOLDER, name);
         File javaBinary = new File(dest, "bin/java");
         File jvmConfig = new File(dest, "lib/jvm.cfg");
@@ -149,14 +159,15 @@ public class MultiRTUtils {
             runtime = forceReread(name);
         } catch (RuntimeException invalidReleaseMetadata) {
             Log.w("MultiRT", "Runtime release metadata is invalid for " + name, invalidReleaseMetadata);
-            return false;
+            return null;
         }
-        return dest.isDirectory()
+        boolean usable = dest.isDirectory()
                 && javaBinary.isFile() && javaBinary.length() > 0
                 && jvmConfig.isFile() && jvmConfig.length() > 0
                 && runtime.versionString != null
-                && runtime.javaVersion == expectedJavaVersion
+                && runtime.javaVersion >= minimumJavaVersion
                 && Architecture.archAsInt(runtime.arch) == expectedArchitecture;
+        return usable ? runtime : null;
     }
 
     /** Replace a runtime only after its staged installation has been fully prepared and validated. */
