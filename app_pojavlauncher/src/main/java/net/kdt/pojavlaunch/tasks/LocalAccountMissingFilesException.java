@@ -32,14 +32,24 @@ public final class LocalAccountMissingFilesException extends IOException
     private final Requirement mRequirement;
     private final MinecraftInstallationPreflight.Failure mFailure;
     private final String mFilePath;
+    private final String mExpectedSha1;
+    private final String mActualSha1;
 
     public LocalAccountMissingFilesException(Requirement requirement,
                                              MinecraftInstallationPreflight.Failure failure,
                                              String filePath) {
+        this(requirement, failure, filePath, null, null);
+    }
+
+    public LocalAccountMissingFilesException(Requirement requirement,
+                                             MinecraftInstallationPreflight.Failure failure,
+                                             String filePath, String expectedSha1, String actualSha1) {
         super(requirement + " " + failure + ": " + filePath);
         mRequirement = requirement;
         mFailure = failure;
         mFilePath = filePath;
+        mExpectedSha1 = expectedSha1;
+        mActualSha1 = actualSha1;
     }
 
     private int requirementLabel() {
@@ -68,6 +78,10 @@ public final class LocalAccountMissingFilesException extends IOException
     public void executeWithActivity(Activity activity) {
         String detail = activity.getString(R.string.flint_preflight_detail,
                 activity.getString(requirementLabel()), activity.getString(failureLabel()), mFilePath);
+        if (mExpectedSha1 != null && mActualSha1 != null) {
+            detail += "\n" + activity.getString(R.string.flint_preflight_hashes,
+                    mExpectedSha1, mActualSha1);
+        }
         AlertDialog.Builder builder = new AlertDialog.Builder(activity)
                 .setTitle(R.string.flint_preflight_title)
                 .setMessage(detail + "\n\n" + activity.getString(R.string.flint_local_missing_files))

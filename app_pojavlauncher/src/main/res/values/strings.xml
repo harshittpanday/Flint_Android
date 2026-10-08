@@ -202,6 +202,7 @@
     <string name="flint_local_missing_files">This local account can launch only when all required game files are already installed and verified. A required file is missing or changed. Sign in with an entitled Microsoft account to download it, or restore a legitimate local installation.</string>
     <string name="flint_preflight_title">Minecraft files need attention</string>
     <string name="flint_preflight_detail">%1$s is %2$s:\n%3$s</string>
+    <string name="flint_preflight_hashes">Expected SHA-1: %1$s\nInstalled SHA-1: %2$s</string>
     <string name="flint_preflight_version_metadata">Version metadata</string>
     <string name="flint_preflight_asset_index">Asset index</string>
     <string name="flint_preflight_client">Minecraft client</string>

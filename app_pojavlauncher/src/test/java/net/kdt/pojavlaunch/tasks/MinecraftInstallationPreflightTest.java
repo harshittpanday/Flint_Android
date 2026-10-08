@@ -42,6 +42,29 @@ public class MinecraftInstallationPreflightTest {
                         "0000000000000000000000000000000000000000"));
     }
 
+    @Test
+    public void acceptsSemanticallyIdenticalJsonFormatting() {
+        String original = "{\"id\":\"1.21.11\",\"downloads\":{\"client\":{\"sha1\":\"abc\"}}}";
+        String formatted = "{ \"downloads\": { \"client\": { \"sha1\": \"abc\" } },\n"
+                + "  \"id\": \"1.21.11\" }";
+        org.junit.Assert.assertTrue(
+                MinecraftInstallationPreflight.jsonSemanticallyEquals(original, formatted));
+    }
+
+    @Test
+    public void rejectsSemanticallyChangedJson() {
+        String trusted = "{\"id\":\"1.21.11\",\"clientSha1\":\"trusted\"}";
+        String changed = "{\"id\":\"1.21.11\",\"clientSha1\":\"changed\"}";
+        org.junit.Assert.assertFalse(
+                MinecraftInstallationPreflight.jsonSemanticallyEquals(trusted, changed));
+    }
+
+    @Test
+    public void verifiesTrustedReferenceHash() throws Exception {
+        assertEquals(true, MinecraftInstallationPreflight.hasSha1(
+                "trusted metadata", "c31b32927cf9c9fd7baa4e040eec203c76f3c935"));
+    }
+
     private File write(String name, String contents) throws Exception {
         File file = temporaryFolder.newFile(name);
         try (FileOutputStream output = new FileOutputStream(file)) {

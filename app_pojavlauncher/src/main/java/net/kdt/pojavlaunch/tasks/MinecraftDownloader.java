@@ -216,8 +216,7 @@ public class MinecraftDownloader {
     private File downloadGameJson(JMinecraftVersionList.Version verInfo) throws IOException, MirrorTamperedException {
         File targetFile = createGameJsonPath(verInfo.id);
         if (isLocalProfile) {
-            verifyLocalFile(targetFile, verInfo.sha1,
-                    LocalAccountMissingFilesException.Requirement.VERSION_METADATA);
+            verifyLocalVersionMetadata(targetFile, verInfo);
             return targetFile;
         }
         if(verInfo.sha1 == null && targetFile.canRead() && targetFile.isFile())
@@ -466,13 +465,52 @@ public class MinecraftDownloader {
         for (DownloaderTask task : mScheduledDownloadTasks) task.verifyLocalFile();
     }
 
+    private static void verifyLocalVersionMetadata(File file, JMinecraftVersionList.Version listedVersion)
+            throws IOException {
+        MinecraftInstallationPreflight.Failure failure =
+                MinecraftInstallationPreflight.verify(file, listedVersion.sha1);
+        if (failure == null) return;
+
+        String actualSha1 = file.isFile() && file.canRead()
+                ? MinecraftInstallationPreflight.sha1(file) : null;
+        if (failure == MinecraftInstallationPreflight.Failure.HASH_MISMATCH
+                && Tools.isValidString(listedVersion.sha1)
+                && Tools.isValidString(listedVersion.url)) {
+            try {
+                String trustedMetadata = DownloadUtils.downloadString(listedVersion.url);
+                if (MinecraftInstallationPreflight.hasSha1(trustedMetadata, listedVersion.sha1)) {
+                    String installedMetadata = Tools.read(file);
+                    if (MinecraftInstallationPreflight.jsonSemanticallyEquals(
+                            installedMetadata, trustedMetadata)) {
+                        Log.i("MinecraftDownloader", "Accepted semantically identical version metadata "
+                                + file.getAbsolutePath() + " (manifest SHA-1 " + listedVersion.sha1
+                                + ", installed SHA-1 " + actualSha1 + ")");
+                        return;
+                    }
+                } else {
+                    Log.e("MinecraftDownloader", "Official metadata did not match manifest SHA-1 for "
+                            + listedVersion.id);
+                }
+            } catch (IOException referenceFailure) {
+                Log.w("MinecraftDownloader", "Could not verify transformed metadata against the official source",
+                        referenceFailure);
+            }
+        }
+        throw new LocalAccountMissingFilesException(
+                LocalAccountMissingFilesException.Requirement.VERSION_METADATA,
+                failure, file.getAbsolutePath(), listedVersion.sha1, actualSha1);
+    }
+
     private static void verifyLocalFile(File file, String expectedSha1,
                                         LocalAccountMissingFilesException.Requirement requirement)
             throws IOException {
         MinecraftInstallationPreflight.Failure failure =
                 MinecraftInstallationPreflight.verify(file, expectedSha1);
         if (failure != null) {
-            throw new LocalAccountMissingFilesException(requirement, failure, file.getAbsolutePath());
+            String actualSha1 = failure == MinecraftInstallationPreflight.Failure.HASH_MISMATCH
+                    ? MinecraftInstallationPreflight.sha1(file) : null;
+            throw new LocalAccountMissingFilesException(
+                    requirement, failure, file.getAbsolutePath(), expectedSha1, actualSha1);
         }
     }
 
