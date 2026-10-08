@@ -12,6 +12,11 @@ import java.security.NoSuchAlgorithmException;
 
 /** Pure file-integrity checks used before a local-account launch. */
 final class MinecraftInstallationPreflight {
+    private static final String OFFICIAL_VERSION_PACKAGE_BASE =
+            "https://piston-meta.mojang.com/v1/packages/";
+    private static final String SHA1_PATTERN = "[0-9a-fA-F]{40}";
+    private static final String VERSION_ID_PATTERN = "[A-Za-z0-9._-]+";
+
     enum Failure {
         MISSING,
         NOT_A_FILE,
@@ -40,9 +45,13 @@ final class MinecraftInstallationPreflight {
     }
 
     static boolean hasSha1(String content, String expectedSha1) throws IOException {
+        return expectedSha1.equalsIgnoreCase(sha1(content));
+    }
+
+    static String sha1(String content) throws IOException {
         MessageDigest digest = newSha1Digest();
         digest.update(content.getBytes(StandardCharsets.UTF_8));
-        return expectedSha1.equalsIgnoreCase(hex(digest.digest()));
+        return hex(digest.digest());
     }
 
     static boolean jsonSemanticallyEquals(String first, String second) {
@@ -51,6 +60,28 @@ final class MinecraftInstallationPreflight {
             JsonElement firstJson = gson.fromJson(first, JsonElement.class);
             JsonElement secondJson = gson.fromJson(second, JsonElement.class);
             return firstJson != null && firstJson.equals(secondJson);
+        } catch (RuntimeException invalidJson) {
+            return false;
+        }
+    }
+
+    static String officialVersionPackageUrl(String versionId, String sha1) {
+        if (versionId == null || !versionId.matches(VERSION_ID_PATTERN)
+                || sha1 == null || !sha1.matches(SHA1_PATTERN)) return null;
+        return OFFICIAL_VERSION_PACKAGE_BASE + sha1.toLowerCase() + "/" + versionId + ".json";
+    }
+
+    static boolean isOfficialVersionRepresentation(String installedMetadata,
+                                                   String officialMetadata,
+                                                   String versionId,
+                                                   String installedSha1) throws IOException {
+        if (!hasSha1(officialMetadata, installedSha1)
+                || !jsonSemanticallyEquals(installedMetadata, officialMetadata)) return false;
+        try {
+            Gson gson = new Gson();
+            JsonElement root = gson.fromJson(officialMetadata, JsonElement.class);
+            if (root == null || !root.isJsonObject() || !root.getAsJsonObject().has("id")) return false;
+            return versionId.equals(root.getAsJsonObject().get("id").getAsString());
         } catch (RuntimeException invalidJson) {
             return false;
         }

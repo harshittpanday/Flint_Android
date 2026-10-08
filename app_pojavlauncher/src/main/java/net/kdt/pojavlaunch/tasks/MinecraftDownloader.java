@@ -476,10 +476,32 @@ public class MinecraftDownloader {
         if (failure == MinecraftInstallationPreflight.Failure.HASH_MISMATCH
                 && Tools.isValidString(listedVersion.sha1)
                 && Tools.isValidString(listedVersion.url)) {
+            String installedMetadata = Tools.read(file);
+
+            // Mojang occasionally republishes a version's metadata (for example, to update its
+            // asset index). A locally installed official revision can therefore differ from a
+            // cached version-list entry. Verify the exact installed representation against
+            // Mojang's content-addressed package service before considering formatting-only
+            // transformations from mirrors.
+            String installedRevisionUrl = MinecraftInstallationPreflight.officialVersionPackageUrl(
+                    listedVersion.id, actualSha1);
+            if (installedRevisionUrl != null) try {
+                String officialInstalledRevision = DownloadUtils.downloadString(installedRevisionUrl);
+                if (MinecraftInstallationPreflight.isOfficialVersionRepresentation(
+                        installedMetadata, officialInstalledRevision, listedVersion.id, actualSha1)) {
+                    Log.i("MinecraftDownloader", "Accepted official version metadata revision "
+                            + file.getAbsolutePath() + " (cached manifest SHA-1 " + listedVersion.sha1
+                            + ", installed official SHA-1 " + actualSha1 + ")");
+                    return;
+                }
+            } catch (IOException revisionLookupFailure) {
+                Log.i("MinecraftDownloader", "Installed metadata is not available as an official revision",
+                        revisionLookupFailure);
+            }
+
             try {
                 String trustedMetadata = DownloadUtils.downloadString(listedVersion.url);
                 if (MinecraftInstallationPreflight.hasSha1(trustedMetadata, listedVersion.sha1)) {
-                    String installedMetadata = Tools.read(file);
                     if (MinecraftInstallationPreflight.jsonSemanticallyEquals(
                             installedMetadata, trustedMetadata)) {
                         Log.i("MinecraftDownloader", "Accepted semantically identical version metadata "

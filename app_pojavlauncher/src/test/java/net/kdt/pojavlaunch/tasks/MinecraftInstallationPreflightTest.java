@@ -65,6 +65,31 @@ public class MinecraftInstallationPreflightTest {
                 "trusted metadata", "c31b32927cf9c9fd7baa4e040eec203c76f3c935"));
     }
 
+    @Test
+    public void buildsOnlySafeOfficialPackageUrls() {
+        assertEquals(
+                "https://piston-meta.mojang.com/v1/packages/"
+                        + "4f6bd9388f12e9d7adc2ded64acba66212d60521/1.21.11.json",
+                MinecraftInstallationPreflight.officialVersionPackageUrl(
+                        "1.21.11", "4f6bd9388f12e9d7adc2ded64acba66212d60521"));
+        assertNull(MinecraftInstallationPreflight.officialVersionPackageUrl(
+                "../other", "4f6bd9388f12e9d7adc2ded64acba66212d60521"));
+        assertNull(MinecraftInstallationPreflight.officialVersionPackageUrl(
+                "1.21.11", "not-a-sha1"));
+    }
+
+    @Test
+    public void acceptsOnlyExactOfficialRepresentationForVersion() throws Exception {
+        String official = "{\"id\":\"1.21.11\",\"assetIndex\":{\"sha1\":\"old-official\"}}";
+        String hash = MinecraftInstallationPreflight.sha1(official);
+        assertEquals(true, MinecraftInstallationPreflight.isOfficialVersionRepresentation(
+                official, official, "1.21.11", hash));
+        assertEquals(false, MinecraftInstallationPreflight.isOfficialVersionRepresentation(
+                official.replace("old-official", "modified"), official, "1.21.11", hash));
+        assertEquals(false, MinecraftInstallationPreflight.isOfficialVersionRepresentation(
+                official, official, "1.21.10", hash));
+    }
+
     private File write(String name, String contents) throws Exception {
         File file = temporaryFolder.newFile(name);
         try (FileOutputStream output = new FileOutputStream(file)) {
